@@ -10,7 +10,7 @@ const copy = {
     name: 'Ismingiz', surname: 'Familiyangiz', email: 'Email', phone: 'Telefon (ixtiyoriy)', message: 'Xabaringiz',
     socials: 'Meni shu yerda ham topasiz', unavailable: 'Havola hali kiritilmagan',
     pending: 'Xabar yuborilmoqda…', sent: 'Xabaringiz yetkazildi. Rahmat!', error: 'Xabar yuborilmadi. Birozdan so‘ng qayta urinib ko‘ring.',
-    consent: 'Ma’lumotlarim xabarni yetkazish uchun qayta ishlanishiga roziman.',
+    consent: 'Mening xabarim yuborilishiga roziman.',
     status: "it's more about hard work than talent", back: 'Yuqoriga',
   },
   en: {
@@ -19,7 +19,7 @@ const copy = {
     name: 'Your name', surname: 'Your surname', email: 'Email', phone: 'Phone (optional)', message: 'Your message',
     socials: 'Find me elsewhere', unavailable: 'Link has not been added yet',
     pending: 'Sending your message…', sent: 'Your message was delivered. Thank you!', error: 'The message could not be sent. Please try again shortly.',
-    consent: 'I agree to my details being processed to deliver this message.',
+    consent: 'I agree to have my message sent.',
     status: "it's more about hard work than talent", back: 'Back to top',
   },
   ru: {

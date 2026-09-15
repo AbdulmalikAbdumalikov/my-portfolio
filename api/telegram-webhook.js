@@ -55,7 +55,7 @@ export default async function handler(req, res) {
 
     const source = message.text?.match(/^\/start\s+(telegram|email)$/i)?.[1]?.toLowerCase()
     const request = source === 'email' ? 'Gmail bo‘yicha murojaat qilish' : 'Telegram kontaktini olish'
-    await sendHtml(chat.id, `<b>${request}</b> uchun avval pastdagi tugma orqali kontaktingizni tasdiqlang.\n\nFaqat o‘zingiz yuborgan ma’lumotlar audit guruhida saqlanadi.`, { reply_markup: contactKeyboard() })
+    await sendHtml(chat.id, `<b>${request}</b> uchun avval pastdagi tugma orqali kontaktingizni tasdiqlang.`, { reply_markup: contactKeyboard() })
     await audit(`<b>Bot / kirish</b>\n<b>Manba:</b> ${html(source || 'oddiy start')}\n<b>Ism:</b> ${html(from.first_name || '')}\n<b>Username:</b> ${html(from.username ? '@' + from.username : 'Yo‘q')}\n<b>Chat ID:</b> <code>${html(chat.id)}</code>`)
     return res.status(200).json({ ok: true })
   } catch (error) {
