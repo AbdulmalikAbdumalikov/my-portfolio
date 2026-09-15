@@ -18,13 +18,25 @@ function Cube({ skill, index, register }) {
 
 export default function SkillPlayground({ title, eyebrow }) {
   const [mode, setMode] = useState('icon')
+  const [isMobile, setIsMobile] = useState(() => innerWidth < 701)
   const [selectedSkill, setSelectedSkill] = useState(null)
   const [cubeSize, setCubeSize] = useState(() => innerWidth < 700 ? 70 : innerWidth < 1100 ? 92 : 116)
   const stageRef = useRef(null)
   const cubeRefs = useRef([])
   const cubeSizeRef = useRef(cubeSize)
   const pointer = useRef({ x: -1000, y: -1000, active: false })
-  const modes = [['3d', '3D', Box], ['text', 'Text', Type], ['icon', 'Icon', Grid3X3]]
+  const modes = isMobile ? [['text', 'Text', Type], ['icon', 'Icon', Grid3X3]] : [['3d', '3D', Box], ['text', 'Text', Type], ['icon', 'Icon', Grid3X3]]
+
+  useEffect(() => {
+    const query = matchMedia('(max-width: 700px)')
+    const update = () => {
+      setIsMobile(query.matches)
+      if (query.matches) setMode(current => current === '3d' ? 'icon' : current)
+    }
+    update()
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
 
   const selectMode = value => {
     if (value === '3d' && mode !== '3d') {

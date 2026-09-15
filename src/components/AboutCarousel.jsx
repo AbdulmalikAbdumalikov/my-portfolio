@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const photos = [
@@ -11,6 +11,7 @@ const photos = [
 
 export default function AboutCarousel() {
   const [active, setActive] = useState(0)
+  const touchStartX = useRef(null)
 
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
@@ -21,7 +22,13 @@ export default function AboutCarousel() {
   const move = direction => setActive(index => (index + direction + photos.length) % photos.length)
 
   return <div className="about-carousel" data-tilt>
-    <div className="about-photo-stack">
+    <div className="about-photo-stack" onTouchStart={event => { touchStartX.current = event.changedTouches[0].clientX }} onTouchEnd={event => {
+      const start = touchStartX.current
+      const distance = start === null ? 0 : event.changedTouches[0].clientX - start
+      touchStartX.current = null
+      if (Math.abs(distance) < 40) return
+      move(distance < 0 ? 1 : -1)
+    }}>
       {photos.map((photo, index) => <div
         className={`photo-frame ${index === active ? 'active' : ''}`}
         style={{ '--photo': `url("${photo.src}")` }}

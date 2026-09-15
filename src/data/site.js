@@ -4,7 +4,7 @@ export const site={
   location:'Uzbekistan',
   email:null,
   phone:null,
-  formEndpoint:null,
+  formEndpoint:'/api/contact',
   socials:{instagram:null,telegram:null,github:null,gmail:null,linkedin:null,whatsapp:null,max:null,discord:null},
 }
 export const projects=[

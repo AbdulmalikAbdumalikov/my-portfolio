@@ -1,9 +1,24 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function PlexusBackground({ subtle = false }) {
   const canvasRef = useRef(null)
+  const [enabled, setEnabled] = useState(() => document.documentElement.dataset.theme !== 'light' && !matchMedia('(max-width: 700px)').matches)
 
   useEffect(() => {
+    const media = matchMedia('(max-width: 700px)')
+    const update = () => setEnabled(document.documentElement.dataset.theme !== 'light' && !media.matches)
+    const observer = new MutationObserver(update)
+    update()
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    media.addEventListener('change', update)
+    return () => {
+      observer.disconnect()
+      media.removeEventListener('change', update)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!enabled) return undefined
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     const pointer = { x: -1000, y: -1000, active: false }
@@ -144,7 +159,7 @@ export default function PlexusBackground({ subtle = false }) {
       canvas.removeEventListener('pointerdown', spawn)
       canvas.removeEventListener('pointerleave', leave)
     }
-  }, [subtle])
+  }, [subtle, enabled])
 
-  return <canvas ref={canvasRef} className="plexus" aria-hidden="true" />
+  return enabled ? <canvas ref={canvasRef} className="plexus" aria-hidden="true" /> : null
 }

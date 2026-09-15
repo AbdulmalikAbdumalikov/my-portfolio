@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
-import { ArrowRight, Lightbulb, Menu, Moon, Sun, X } from 'lucide-react'
+import { ArrowRight, Eye, Menu, Moon, Sun, X } from 'lucide-react'
 import PlexusBackground from './components/PlexusBackground'
 import AboutCarousel from './components/AboutCarousel'
 import ProjectCarousel from './components/ProjectCarousel'
@@ -7,7 +7,6 @@ import ContactSection from './components/ContactSection'
 import { moreWork, planned, projects } from './data/site'
 
 const SkillPlayground = lazy(() => import('./components/SkillPlayground'))
-const InteractiveLamp = lazy(() => import('./components/InteractiveLamp'))
 
 const i18n = {
   en: {
@@ -15,7 +14,7 @@ const i18n = {
     description: 'I build web applications, automation systems, Telegram bots and useful technology solutions.',
     work: 'View my work', contact: 'Contact me', aboutTitle: 'I build digital things.',
     aboutCopy: 'Uzbekistan-based developer focused on web development, automation, Telegram bots, APIs, systems and robotics.',
-    featured: 'Featured work', more: 'More work', skills: 'Technology stack', lab: 'The Lab',
+    featured: 'Featured work', more: 'More work', skills: 'Skills', lab: 'The Lab',
     mainProjects: 'Main projects', telegramBots: 'Telegram bots', plannedProjects: 'Planned projects', planned: 'PLANNED',
     contactTitle: 'Let\'s build something useful.', send: 'Send message', built: 'BUILT', active: 'BUILT / ACTIVE',
     badge: 'Developer & Tech Builder',
@@ -26,7 +25,7 @@ const i18n = {
     description: 'Men web ilovalar, avtomatlashtirish tizimlari, Telegram botlar va foydali texnologik yechimlar yarataman.',
     work: 'Loyihalarimni ko‘rish', contact: 'Men bilan bog‘lanish', aboutTitle: 'Men raqamli mahsulotlar yarataman.',
     aboutCopy: 'O‘zbekistonda faoliyat yurituvchi web, avtomatlashtirish, Telegram botlar, API, tizimlar va robototexnikaga ixtisoslashgan dasturchi.',
-    featured: 'Tanlangan loyihalar', more: 'Yana ishlar', skills: 'Texnologiyalar', lab: 'Laboratoriya',
+    featured: 'Tanlangan loyihalar', more: 'Yana ishlar', skills: 'Qobiliyatlar', lab: 'Laboratoriya',
     mainProjects: 'Asosiy loyihalar', telegramBots: 'Telegram botlar', plannedProjects: 'Rejalashtirilgan loyihalar', planned: 'REJALASHTIRILGAN',
     contactTitle: 'Keling, foydali narsa yarataylik.', send: 'Yuborish', built: 'YARATILGAN', active: 'YARATILGAN / ACTIVE',
     badge: 'Developer & Tech Builder',
@@ -143,26 +142,14 @@ export default function App() {
     return saved === 'dark' || saved === 'light' ? saved : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   })
   const [open, setOpen] = useState(false)
-  const [aboutLampMode, setAboutLampMode] = useState('off')
+  const [aboutFocus, setAboutFocus] = useState(false)
   const [aboutZoom, setAboutZoom] = useState(100)
   const t = i18n[lang]
-
-  const cycleAboutLight = () => setAboutLampMode(mode => {
-    if (mode === 'off') return 'on'
-    if (mode === 'on') return 'light'
-    if (mode === 'light') return 'fading'
-    return mode
-  })
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     localStorage.setItem('aa-theme', theme)
   }, [theme])
-  useEffect(() => {
-    if (aboutLampMode !== 'fading') return undefined
-    const timer = window.setTimeout(() => setAboutLampMode('off'), 950)
-    return () => window.clearTimeout(timer)
-  }, [aboutLampMode])
   useEffect(() => { localStorage.setItem('aa-lang', lang); document.documentElement.lang = lang }, [lang])
 
   const statusLabel = status => status === 'planned' ? t.planned : status === 'maintained' ? t.active : t.built
@@ -227,8 +214,7 @@ export default function App() {
 
     <section id="about" className="about about-expanded">
       <AboutCarousel />
-      <div className={`about-copy lamp-${aboutLampMode}`} data-tilt>
-        <Suspense fallback={null}><InteractiveLamp mode={aboutLampMode} /></Suspense>
+      <div className={`about-copy${aboutFocus ? ' is-focused' : ''}`} data-tilt>
         <div className="about-copy-scroll">
           <div className="about-copy-content">
             <p className="eyebrow">01 / ABOUT ME</p>
@@ -239,24 +225,18 @@ export default function App() {
           </div>
         </div>
         <div className="about-reading-controls">
-          <span aria-hidden="true" />
           <label className="about-zoom-control">
             <input type="range" min="80" max="300" step="5" value={aboutZoom} onChange={event => setAboutZoom(Number(event.target.value))} aria-label="About matni o‘lchami" />
             <output>{aboutZoom}%</output>
           </label>
-          <button
-            className={`lamp-cycle-toggle mode-${aboutLampMode}`}
-            onClick={cycleAboutLight}
-            aria-label={`O‘qish yoritgichi: ${aboutLampMode}. Keyingi holatga o‘tkazish`}
-            title={`Light mode: ${aboutLampMode.toUpperCase()}`}
-          ><Lightbulb size={19} aria-hidden="true" /></button>
+          <button className={`about-focus-toggle${aboutFocus ? ' active' : ''}`} onClick={() => setAboutFocus(value => !value)} aria-pressed={aboutFocus} aria-label={aboutFocus ? 'Focus rejimini o‘chirish' : 'Focus rejimini yoqish'} title="Focus reading mode"><Eye size={19} aria-hidden="true" /></button>
         </div>
       </div>
     </section>
     <Suspense fallback={<section className="skills-loading">3D SKILLS LOADING…</section>}><SkillPlayground title={t.skills} eyebrow={t.skills} /></Suspense>
     <section id="projects" className="projects">
       <div className="projects-shell">
-        <div className="projects-intro"><p className="eyebrow">03 / PROJECTS</p><h2>{t.featured}</h2></div>
+        <div className="projects-intro"><p className="eyebrow">03 / PROJECTS</p><h2>{lang === 'uz' ? 'Loyihalarim' : lang === 'ru' ? 'Мои проекты' : 'My projects'}</h2></div>
         <ProjectCarousel items={allProjectItems} statusLabel={statusLabel} />
       </div>
     </section>
