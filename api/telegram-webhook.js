@@ -31,6 +31,27 @@ function mainMenu() {
   return { keyboard: [['🌐 Site', '❓ Savol berish'], ['💳 Donate', '🤝 Bizning jamoaga qo‘shilish']], resize_keyboard: true, is_persistent: true }
 }
 
+const chatRequests = {
+  '/own_channel': { requestId: 201, label: '📢 O‘z kanalimni tanlash', chatIsChannel: true, chatIsCreated: true, title: 'O‘zingiz yaratgan kanalni tanlang.' },
+  '/own_channels': { requestId: 201, label: '📢 O‘z kanalimni tanlash', chatIsChannel: true, chatIsCreated: true, title: 'O‘zingiz yaratgan kanalni tanlang.' },
+  '/own_group': { requestId: 202, label: '👥 O‘z guruhimni tanlash', chatIsChannel: false, chatIsCreated: true, title: 'O‘zingiz yaratgan guruhni tanlang.' },
+  '/own_groups': { requestId: 202, label: '👥 O‘z guruhimni tanlash', chatIsChannel: false, chatIsCreated: true, title: 'O‘zingiz yaratgan guruhni tanlang.' },
+  '/admin_channel': { requestId: 203, label: '📢 Admin kanalni tanlash', chatIsChannel: true, title: 'Admin bo‘lgan kanalingizni tanlang.' },
+  '/admin_channels': { requestId: 203, label: '📢 Admin kanalni tanlash', chatIsChannel: true, title: 'Admin bo‘lgan kanalingizni tanlang.' },
+  '/admin_group': { requestId: 204, label: '👥 Admin guruhni tanlash', chatIsChannel: false, title: 'Admin bo‘lgan guruhingizni tanlang.' },
+  '/admin_groups': { requestId: 204, label: '👥 Admin guruhni tanlash', chatIsChannel: false, title: 'Admin bo‘lgan guruhingizni tanlang.' },
+  '/admini_group': { requestId: 204, label: '👥 Admin guruhni tanlash', chatIsChannel: false, title: 'Admin bo‘lgan guruhingizni tanlang.' },
+}
+
+function chatPicker(command) {
+  const request = chatRequests[command]
+  return {
+    keyboard: [[{ text: request.label, request_chat: { request_id: request.requestId, chat_is_channel: request.chatIsChannel, chat_is_created: request.chatIsCreated, request_title: true, request_username: true } }], [{ text: '⬅️ Orqaga' }]],
+    resize_keyboard: true,
+    one_time_keyboard: true,
+  }
+}
+
 const isQuestionReply = message => message.reply_to_message?.from?.is_bot && /savolingizni yozing/i.test(message.reply_to_message.text || '')
 const messageType = message => message.text ? 'text' : message.contact ? 'contact' : message.photo ? 'photo' : message.video ? 'video' : message.document ? 'document' : message.voice ? 'voice' : message.sticker ? 'sticker' : 'other'
 
@@ -73,6 +94,12 @@ async function handlePrivateMessage(message) {
     return showMainMenu(chat.id, 'Savolingiz yuborildi. Javob imkon qadar tez beriladi.')
   }
 
+  if (message.chat_shared) {
+    const shared = message.chat_shared
+    const name = shared.title || shared.username || `Chat ID: ${shared.chat_id}`
+    return showMainMenu(chat.id, `<b>Chat tanlandi:</b> ${html(name)}\n<code>${html(shared.chat_id)}</code>\n\nBot faqat siz tanlagan chatni ko‘ra oladi.`)
+  }
+
   if (command === '/start') {
     const source = text.match(/^\/start\s+(telegram|email)$/i)?.[1]?.toLowerCase() || 'oddiy start'
     await audit('users', `<b>Bot / yangi kirish</b>\n<b>Manba:</b> ${html(source)}\n${userDetails(from)}\n<b>Chat ID:</b> <code>${html(chat.id)}</code>\n<b>Vaqt:</b> ${html(new Date().toISOString())}`)
@@ -85,6 +112,8 @@ async function handlePrivateMessage(message) {
   if (text === '🌐 Site') return sendHtml(chat.id, '<a href="https://abdulmalik.uz">abdulmalik.uz</a>', { reply_markup: mainMenu() })
   if (text === '💳 Donate' || command === '/donate') return sendHtml(chat.id, '<b>Donate</b>\n\nHozircha test karta: <code>1234 1234 1234 1324</code>\n\nHaqiqiy karta keyin yangilanadi.', { reply_markup: mainMenu() })
   if (text === '❓ Savol berish') return sendHtml(chat.id, 'Savolingizni yozing. U alohida topicga yuboriladi.', { reply_markup: { force_reply: true, input_field_placeholder: 'Savolingizni yozing…' } })
+  if (chatRequests[command]) return sendHtml(chat.id, `${chatRequests[command].title}\n\nPastdagi tugmani bosing.`, { reply_markup: chatPicker(command) })
+  if (text === '⬅️ Orqaga') return showMainMenu(chat.id)
   if (text === '🤝 Bizning jamoaga qo‘shilish') {
     const member = await isTeamMember(from.id)
     const note = member ? 'Siz jamoa guruhiga allaqachon qo‘shilgansiz.' : 'Jamoaga qo‘shilish uchun quyidagi havolani bosing.'
