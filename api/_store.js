@@ -3,6 +3,7 @@ import { env } from './_telegram.js'
 const redisUrl = () => env('KV_REST_API_URL').replace(/\/$/, '')
 const redisToken = () => env('KV_REST_API_TOKEN')
 const userKey = userId => `portfolio:bot-user:${userId}`
+const visitorKey = userId => `portfolio:bot-visitor:${userId}`
 
 async function command(parts) {
   const url = redisUrl()
@@ -25,6 +26,16 @@ export async function getUserProfile(userId) {
 
 export async function saveUserProfile(userId, profile) {
   await command(['SET', userKey(userId), JSON.stringify(profile)])
+}
+
+export async function getVisitorProfile(userId) {
+  const response = await command(['GET', visitorKey(userId)])
+  if (!response?.result) return null
+  try { return JSON.parse(response.result) } catch { return null }
+}
+
+export async function saveVisitorProfile(userId, profile) {
+  await command(['SET', visitorKey(userId), JSON.stringify(profile)])
 }
 
 export const hasUserStore = () => Boolean(redisUrl() && redisToken())

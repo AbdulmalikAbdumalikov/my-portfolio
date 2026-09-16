@@ -1,5 +1,5 @@
 import { env, html, sendHtml, telegram } from './_telegram.js'
-import { getUserProfile, hasUserStore, saveUserProfile } from './_store.js'
+import { getUserProfile, getVisitorProfile, hasUserStore, saveUserProfile, saveVisitorProfile } from './_store.js'
 
 const TEAM_INVITE_URL = 'https://t.me/+NZqQCwLt0agxOTMy'
 const TEAM_CHAT_ID = () => env('TELEGRAM_TEAM_CHAT_ID') || '-1004323111381'
@@ -22,6 +22,15 @@ async function audit(topic, text) {
 
 const label = value => html(value || 'Yo‘q')
 const userDetails = user => `<b>Ism:</b> ${label(user.first_name)} ${label(user.last_name)}\n<b>Username:</b> ${label(user.username ? '@' + user.username : null)}\n<b>User ID:</b> <code>${html(user.id)}</code>\n<b>Til:</b> ${label(user.language_code)}\n<b>Premium:</b> ${user.is_premium ? 'Ha' : 'Yo‘q'}\n<b>Bot:</b> ${user.is_bot ? 'Ha' : 'Yo‘q'}`
+const userSnapshot = user => ({
+  userId: user.id,
+  firstName: user.first_name || '',
+  lastName: user.last_name || '',
+  username: user.username || '',
+  languageCode: user.language_code || '',
+  isPremium: Boolean(user.is_premium),
+})
+const sameSnapshot = (left, right) => left && right && Object.keys(right).every(key => left[key] === right[key])
 
 function contactKeyboard() {
   return { keyboard: [[{ text: '📱 Kontaktimni ulashaman', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true }
@@ -83,9 +92,11 @@ async function handlePrivateMessage(message) {
   if (message.contact) {
     const contact = message.contact
     if (contact.user_id && contact.user_id !== from.id) return sendHtml(chat.id, 'Faqat o‘zingizning kontaktingizni ulashing.')
-    const profile = { chatId: chat.id, userId: from.id, firstName: contact.first_name, lastName: contact.last_name || '', phone: contact.phone_number, username: from.username || '', updatedAt: new Date().toISOString() }
+    const previousProfile = hasUserStore() ? await getUserProfile(from.id) : null
+    const profile = { ...userSnapshot(from), chatId: chat.id, contactFirstName: contact.first_name || '', contactLastName: contact.last_name || '', phone: contact.phone_number, contactUserId: contact.user_id || null, updatedAt: new Date().toISOString() }
+    const sameContact = previousProfile && ['userId', 'firstName', 'lastName', 'username', 'languageCode', 'isPremium', 'chatId', 'contactFirstName', 'contactLastName', 'phone', 'contactUserId'].every(key => previousProfile[key] === profile[key])
     if (hasUserStore()) await saveUserProfile(from.id, profile)
-    await audit('userContact', `<b>Bot / contact tasdiqlandi</b>\n\n${userDetails(from)}\n<b>Telefon:</b> ${html(contact.phone_number)}\n<b>Contact user ID:</b> <code>${html(contact.user_id || 'Yo‘q')}</code>\n<b>Vaqt:</b> ${html(profile.updatedAt)}`)
+    if (!sameContact) await audit('userContact', `<b>Bot / contact tasdiqlandi</b>\n\n${userDetails(from)}\n<b>Telefon:</b> ${html(contact.phone_number)}\n<b>Contact user ID:</b> <code>${html(contact.user_id || 'Yo‘q')}</code>\n<b>Vaqt:</b> ${html(profile.updatedAt)}`)
     return showMainMenu(chat.id, `<b>Rahmat, kontaktingiz tasdiqlandi.</b>\n\nTelegram: @${html(ownerUsername())}\nGmail masalasi bo‘yicha @${html(ownerUsername())} ga yozing.`)
   }
 
@@ -102,7 +113,12 @@ async function handlePrivateMessage(message) {
 
   if (command === '/start') {
     const source = text.match(/^\/start\s+(telegram|email)$/i)?.[1]?.toLowerCase() || 'oddiy start'
-    await audit('users', `<b>Bot / yangi kirish</b>\n<b>Manba:</b> ${html(source)}\n${userDetails(from)}\n<b>Chat ID:</b> <code>${html(chat.id)}</code>\n<b>Vaqt:</b> ${html(new Date().toISOString())}`)
+    const visitor = { ...userSnapshot(from), chatId: chat.id }
+    const previousVisitor = hasUserStore() ? await getVisitorProfile(from.id) : null
+    if (!sameSnapshot(previousVisitor, visitor)) {
+      await audit('users', `<b>Bot / yangi kirish</b>\n<b>Manba:</b> ${html(source)}\n${userDetails(from)}\n<b>Chat ID:</b> <code>${html(chat.id)}</code>\n<b>Vaqt:</b> ${html(new Date().toISOString())}`)
+      if (hasUserStore()) await saveVisitorProfile(from.id, visitor)
+    }
     const profile = hasUserStore() ? await getUserProfile(from.id) : null
     if (profile) return showMainMenu(chat.id, `Qaytganingizdan xursandmiz, ${html(profile.firstName)}.`)
     const request = source === 'email' ? 'Gmail bo‘yicha murojaat qilish' : 'Telegram kontaktini olish'
