@@ -16,6 +16,6 @@ Webhook va `getUpdates` bir vaqtda ishlamaydi; production uchun webhookdan foyda
 
 1. Audit forum guruhidagi `users`, `commands`, `user_contact` va `questions` topiclarining har biriga alohida `/topicid` yuboring. Bot qaytargan `Topic ID`larni Vercel’dagi mos ravishda `TELEGRAM_TOPIC_USERS_ID`, `TELEGRAM_TOPIC_COMMANDS_ID`, `TELEGRAM_TOPIC_USER_CONTACT_ID` va `TELEGRAM_TOPIC_QUESTIONS_ID` qiymatlariga kiriting.
 2. Audit guruh ID sini `TELEGRAM_AUDIT_CHAT_ID` sifatida kiriting. Bu ID `-100...` formatida bo‘ladi.
-3. Bir foydalanuvchi contactini qayta-qayta so‘ramaslik uchun Upstash Redis database yarating va uning REST URL hamda REST tokenini Vercel’dagi `KV_REST_API_URL` va `KV_REST_API_TOKEN`ga qo‘ying. Guruh topiclari xabarlarni saqlaydi, ammo bot ularning tarixidan avvalgi contactni qidira olmaydi.
+3. Bir foydalanuvchi contactini qayta-qayta so‘ramaslik uchun PostgreSQL database yarating va uning connection URL qiymatini Vercel’dagi `DATABASE_URL`ga qo‘ying. Guruh topiclari xabarlarni saqlaydi, ammo bot ularning tarixidan avvalgi contactni qidira olmaydi.
 4. Botni jamoa guruhida admin qiling va `Delete messages` huquqini bering. `MODERATION_WORDS`ga qo‘shimcha taqiqlangan so‘zlarni vergul bilan kiriting.
 5. Webhookni qayta o‘rnatinganda `allowed_updates` ichida `message` va `chat_member` bo‘lishi kerak; shunda guruhdan chiqish kuzatiladi.
