@@ -27,10 +27,15 @@ export default function PlexusBackground({ subtle = false }) {
     let spawned = []
     let raf = 0
     let running = true
+    let visible = true
+    let frame = 0
+    let rect = { width: 0, height: 0 }
+    let iconNodes = []
 
     const resize = () => {
-      const rect = canvas.getBoundingClientRect()
+      const bounds = canvas.getBoundingClientRect()
       const dpr = Math.min(devicePixelRatio || 1, 1.5)
+      rect = { width: bounds.width, height: bounds.height }
       canvas.width = rect.width * dpr
       canvas.height = rect.height * dpr
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -43,6 +48,13 @@ export default function PlexusBackground({ subtle = false }) {
       }))
     }
 
+    const updateIconNodes = () => {
+      iconNodes = Array.from(document.querySelectorAll('.tech-floats span')).map(element => {
+        const iconRect = element.getBoundingClientRect()
+        return { x: iconRect.left + iconRect.width / 2 - rect.left, y: iconRect.top + iconRect.height / 2 - rect.top }
+      }).filter(icon => icon.x > -70 && icon.x < rect.width + 70 && icon.y > -70 && icon.y < rect.height + 70)
+    }
+
     const movePoint = (point, rect) => {
       point.x += point.vx
       point.y += point.vy
@@ -52,7 +64,6 @@ export default function PlexusBackground({ subtle = false }) {
 
     const draw = time => {
       if (!running) return
-      const rect = canvas.getBoundingClientRect()
       const dark = document.documentElement.dataset.theme !== 'light'
       ctx.clearRect(0, 0, rect.width, rect.height)
       spawned = spawned.filter(point => time - point.born < 10000)
@@ -78,10 +89,7 @@ export default function PlexusBackground({ subtle = false }) {
           ctx.stroke()
         }
       }
-      const iconNodes = Array.from(document.querySelectorAll('.tech-floats span')).map(element => {
-        const iconRect = element.getBoundingClientRect()
-        return { x: iconRect.left + iconRect.width / 2 - rect.left, y: iconRect.top + iconRect.height / 2 - rect.top }
-      }).filter(icon => icon.x > -70 && icon.x < rect.width + 70 && icon.y > -70 && icon.y < rect.height + 70)
+      if (frame++ % 12 === 0) updateIconNodes()
       for (const point of nodes) for (const icon of iconNodes) {
         const distance = Math.hypot(point.x - icon.x, point.y - icon.y)
         const limit = 190
@@ -117,7 +125,7 @@ export default function PlexusBackground({ subtle = false }) {
         ctx.arc(pointer.x, pointer.y, 13, 0, Math.PI * 2)
         ctx.stroke()
       }
-      raf = requestAnimationFrame(draw)
+      if (!reduce) raf = requestAnimationFrame(draw)
     }
 
     const move = event => {
@@ -138,13 +146,23 @@ export default function PlexusBackground({ subtle = false }) {
     }
     const leave = () => { pointer.active = false }
     const visibility = () => {
-      running = !document.hidden
-      if (running) raf = requestAnimationFrame(draw)
+      running = !document.hidden && visible
+      if (running) {
+        if (reduce) draw(performance.now())
+        else raf = requestAnimationFrame(draw)
+      }
       else cancelAnimationFrame(raf)
     }
 
+    const intersection = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting
+      visibility()
+    }, { threshold: 0 })
+
     resize()
-    raf = requestAnimationFrame(draw)
+    intersection.observe(canvas)
+    if (reduce) draw(performance.now())
+    else raf = requestAnimationFrame(draw)
     addEventListener('resize', resize)
     document.addEventListener('visibilitychange', visibility)
     canvas.addEventListener('pointermove', move)
@@ -153,6 +171,7 @@ export default function PlexusBackground({ subtle = false }) {
     return () => {
       running = false
       cancelAnimationFrame(raf)
+      intersection.disconnect()
       removeEventListener('resize', resize)
       document.removeEventListener('visibilitychange', visibility)
       canvas.removeEventListener('pointermove', move)

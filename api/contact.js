@@ -29,8 +29,8 @@ export default async function handler(req, res) {
     const ownerChatId = env('TELEGRAM_OWNER_CHAT_ID')
     if (!ownerChatId) throw new Error('Owner chat is not configured.')
 
-    // The owner receives exactly the fields requested for a site message.
-    await sendHtml(ownerChatId, `<b>Yangi sayt xabari</b>\n\n<b>Ism:</b> ${html(name)}\n<b>Familiya:</b> ${html(surname)}\n<b>Email:</b> ${html(email)}\n<b>Xabar:</b> ${html(message)}`)
+    // The owner receives all contact fields submitted through the site form.
+    await sendHtml(ownerChatId, `<b>Yangi sayt xabari</b>\n\n<b>Ism:</b> ${html(name)}\n<b>Familiya:</b> ${html(surname)}\n<b>Email:</b> ${html(email)}\n<b>Telefon:</b> ${html(phone || 'Berilmagan')}\n<b>Xabar:</b> ${html(message)}`)
 
     // The audit group receives only voluntarily supplied form data.
     const auditChatId = env('TELEGRAM_AUDIT_CHAT_ID')

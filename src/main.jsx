@@ -7,16 +7,25 @@ import './hero-polish.css'
 import './phase-two.css'
 import './layout-polish.css'
 import './contact.css'
+import './performance.css'
 import App from './App'
 
 function AmbientUI() {
   const dot = useRef(null)
   useEffect(() => {
     if (matchMedia('(pointer: coarse), (prefers-reduced-motion: reduce)').matches) return
-    const move = event => { dot.current.style.transform = `translate(${event.clientX}px, ${event.clientY}px)` }
-    const scroll = () => { document.documentElement.style.setProperty('--scroll-progress', `${scrollY / (document.documentElement.scrollHeight - innerHeight) * 100}%`) }
+    let frame = 0
+    const move = event => { if (dot.current) dot.current.style.transform = `translate(${event.clientX}px, ${event.clientY}px)` }
+    const scroll = () => {
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        const maxScroll = Math.max(1, document.documentElement.scrollHeight - innerHeight)
+        document.documentElement.style.setProperty('--scroll-progress', `${scrollY / maxScroll * 100}%`)
+      })
+    }
     addEventListener('pointermove', move); addEventListener('scroll', scroll, { passive: true }); scroll()
-    return () => { removeEventListener('pointermove', move); removeEventListener('scroll', scroll) }
+    return () => { cancelAnimationFrame(frame); removeEventListener('pointermove', move); removeEventListener('scroll', scroll) }
   }, [])
   useEffect(() => {
     if (matchMedia('(pointer: coarse), (prefers-reduced-motion: reduce)').matches) return undefined

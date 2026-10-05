@@ -1,0 +1,21 @@
+/* Keep below-the-fold layout and paint work out of the critical viewport. */
+@media (min-width: 701px) {
+  .about,
+  .skill-playground,
+  .projects {
+    content-visibility: auto;
+    contain-intrinsic-size: 900px;
+  }
+}
+
+img {
+  max-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plexus,
+  .tech-floats,
+  .cursor-dot {
+    display: none;
+  }
+}

@@ -36,6 +36,9 @@ export default function AboutCarousel() {
       ><img
           src={photo.src}
           style={{ objectPosition: photo.position }}
+          loading={index === 0 ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchPriority={index === 0 ? 'high' : 'low'}
           alt={index === active ? `Abdulmalik — portfolio rasmi ${index + 1}` : ''}
         /></div>)}
     </div>
