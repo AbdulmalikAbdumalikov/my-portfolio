@@ -4,6 +4,7 @@ import PlexusBackground from './components/PlexusBackground'
 import AboutCarousel from './components/AboutCarousel'
 import ProjectCarousel from './components/ProjectCarousel'
 import ContactSection from './components/ContactSection'
+import ProAccess from './components/ProAccess'
 import { moreWork, planned, projects } from './data/site'
 
 const SkillPlayground = lazy(() => import('./components/SkillPlayground'))
@@ -191,6 +192,7 @@ export default function App() {
         {t.nav.map((label, index) => <a href={['#home', '#about', '#projects', '#skills', '#contact'][index]} key={label} onClick={() => setOpen(false)}>{label}</a>)}
       </nav>
       <a className="community-join" href="https://t.me/+NZqQCwLt0agxOTMy" target="_blank" rel="noreferrer">Bizga qo‘shiling <ArrowRight size={14} /></a>
+      <ProAccess />
       <div className="controls">
         {['uz', 'ru', 'en'].map(code => <button className={lang === code ? 'on' : ''} onClick={() => setLang(code)} key={code}>{code}</button>)}
         <button className="theme-toggle" onClick={() => setTheme(value => value === 'dark' ? 'light' : 'dark')} aria-label={theme === 'dark' ? 'Light theme' : 'Dark theme'}>{theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}</button>

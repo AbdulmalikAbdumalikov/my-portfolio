@@ -12,6 +12,14 @@
 
 Webhook va `getUpdates` bir vaqtda ishlamaydi; production uchun webhookdan foydalaning.
 
+## Pro styles
+
+1. Vercel Environment Variables’ga `TELEGRAM_PRO_GROUP_CHAT_ID=-1004480846914` va `TELEGRAM_PRO_TOPIC_ID=69` qiymatlarini qo‘ying.
+2. `DATABASE_URL` majburiy: pro userlar, bir martalik code’lar va 6 soatlik qurilma sessiyalari PostgreSQL’da saqlanadi. Telegram topic 69 audit log sifatida ishlaydi.
+3. Admin Telegram ID `6876382325` bo‘lsa, bot menyusida `👑 Pro users` chiqadi. U yerdan botdan o‘tgan userni Pro user sifatida qo‘shish mumkin.
+4. Qo‘shilgan user botdagi `🔑 Code olish` tugmasidan bir martalik code oladi. Sayt navbaridagi `PRO` tugmasi orqali code kiritiladi.
+5. Code bir marta ishlaydi; shu qurilmada Pro style sessiyasi 6 soat davom etadi. Sessiya tugagach yangi code olish kerak.
+
 ## Forum topiclari va foydalanuvchi xotirasi
 
 1. Audit forum guruhidagi `users`, `commands`, `user_contact` va `questions` topiclarining har biriga alohida `/topicid` yuboring. Bot qaytargan `Topic ID`larni Vercel’dagi mos ravishda `TELEGRAM_TOPIC_USERS_ID`, `TELEGRAM_TOPIC_COMMANDS_ID`, `TELEGRAM_TOPIC_USER_CONTACT_ID` va `TELEGRAM_TOPIC_QUESTIONS_ID` qiymatlariga kiriting.
