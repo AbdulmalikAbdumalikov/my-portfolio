@@ -37,6 +37,11 @@ const initialProjects = [
 ]
 
 export const defaultContent = {
+  hero: {
+    uz: { badge: 'Developer & Tech Builder', hello: 'Salom, men', firstName: 'Abdulmalik', lastName: 'Abdumalikov', rolePrefix: 'Men', roles: ['Web Developer', 'React Developer', 'Telegram Bot Builder', 'Automation Builder', 'Tech Builder'], description: 'Men web ilovalar, avtomatlashtirish tizimlari, Telegram botlar va foydali texnologik yechimlar yarataman.', work: 'Loyihalarimni ko‘rish', contact: 'Men bilan bog‘lanish', meta: 'UZBEKISTAN · PORTFOLIO / 2026' },
+    en: { badge: 'Developer & Tech Builder', hello: 'Hello, I am', firstName: 'Abdulmalik', lastName: 'Abdumalikov', rolePrefix: 'I am a', roles: ['Web Developer', 'React Developer', 'Telegram Bot Builder', 'Automation Builder', 'Tech Builder'], description: 'I build web applications, automation systems, Telegram bots and useful technology solutions.', work: 'View my work', contact: 'Contact me', meta: 'UZBEKISTAN · PORTFOLIO / 2026' },
+    ru: { badge: 'Developer & Tech Builder', hello: 'Привет, я', firstName: 'Абдулмалик', lastName: 'Абдумаликов', rolePrefix: 'Я', roles: ['Веб-разработчик', 'React-разработчик', 'Разработчик Telegram-ботов', 'Специалист по автоматизации', 'Tech Builder'], description: 'Я создаю веб-приложения, системы автоматизации, Telegram-ботов и полезные технологические решения.', work: 'Смотреть проекты', contact: 'Связаться со мной', meta: 'UZBEKISTAN · PORTFOLIO / 2026' },
+  },
   photos: [
     { src: '/about/bdcbf095-c6cd-466c-b494-17d820b9e40d.png', position: 'center' },
     { src: '/about/MYrasm%20(1).jpg', position: 'center' },
@@ -65,7 +70,7 @@ export const defaultContent = {
     ],
   },
   skills: skills.map(skill => ({ ...skill, category: skillDetails[skill.name]?.[0] || 'Skill', description: skillDetails[skill.name]?.[1] || '' })),
-  projects: initialProjects,
+  projects: initialProjects.map(project => ({ ...project, banner: '' })),
   links: [
     { id: 'instagram', label: 'Instagram', icon: '/social-icons/instagram.svg', url: 'https://www.instagram.com/abdulmalik_developer/', note: 'Shaxsiy account' },
     { id: 'telegram', label: 'Telegram', icon: '/social-icons/telegram.svg', url: 'https://t.me/bot_for_contact_bot?start=telegram', note: '@bot_for_contact_bot' },

@@ -146,6 +146,7 @@ export default function App() {
   const [aboutFocus, setAboutFocus] = useState(false)
   const [aboutZoom, setAboutZoom] = useState(100)
   const t = i18n[lang]
+  const hero = { badge: t.badge, hello: t.hello, firstName: 'Abdulmalik', lastName: 'Abdumalikov', rolePrefix: lang === 'ru' ? 'Я' : lang === 'en' ? 'I am a' : 'Men', roles: t.roles, description: t.description, work: t.work, contact: t.contact, meta: 'UZBEKISTAN · PORTFOLIO / 2026', ...portfolioContent.hero?.[lang] }
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -173,8 +174,6 @@ export default function App() {
   }, [])
 
   const statusLabel = status => status === 'planned' ? t.planned : status === 'maintained' ? t.active : t.built
-  const rolePrefix = lang === 'ru' ? 'Я' : lang === 'en' ? 'I am a' : 'Men'
-
   const allProjectItems = portfolioContent.projects.map(project => ({ ...project, projectType: project.type || 'website' }))
 
   return <main>
@@ -197,15 +196,15 @@ export default function App() {
     <section id="home" className="new-hero">
       <PlexusBackground />
       <div className="hero-copy">
-        <span className="glass-badge"><i />{t.badge}</span>
-        <h1>{t.hello} <strong>Abdulmalik<br />Abdumalikov</strong></h1>
-        <TypedRole prefix={rolePrefix} roles={t.roles} />
-        <p className="description">{t.description}</p>
+        <span className="glass-badge"><i />{hero.badge}</span>
+        <h1>{hero.hello} <strong>{hero.firstName}<br />{hero.lastName}</strong></h1>
+        <TypedRole prefix={hero.rolePrefix} roles={hero.roles?.length ? hero.roles : t.roles} />
+        <p className="description">{hero.description}</p>
         <div className="hero-actions">
-          <a className="primary" href="#projects">{t.work}<ArrowRight size={16} /></a>
-          <a className="secondary" href="#contact">{t.contact}</a>
+          <a className="primary" href="#projects">{hero.work}<ArrowRight size={16} /></a>
+          <a className="secondary" href="#contact">{hero.contact}</a>
         </div>
-        <p className="hero-meta">UZBEKISTAN · PORTFOLIO / 2026</p>
+        <p className="hero-meta">{hero.meta}</p>
       </div>
     </section>
 

@@ -44,7 +44,7 @@ const defaultChannels = [
 
 function SocialLink({ channel, compact = false, onOpen }) {
   return <button type="button" className={`contact-social${compact ? ' is-compact' : ''}${channel.id === 'mentors' ? ' is-mentors' : ''}`} onClick={() => onOpen(channel)} aria-label={`${channel.label} kontaktlari`} title={channel.label}>
-      <span className="contact-social-icon"><img src={channel.icon} alt="" aria-hidden="true" /></span>
+      <span className="contact-social-icon">{channel.icon ? <img src={channel.icon} alt="" aria-hidden="true" /> : <b aria-hidden="true">{channel.label?.slice(0, 1).toUpperCase()}</b>}</span>
       {(!compact || channel.id === 'mentors') && <><b>{channel.label}</b>{!compact && <ArrowUpRight size={15} aria-hidden="true" />}</>}
     </button>
 }
@@ -53,7 +53,7 @@ function ContactModal({ channel, onClose }) {
   if (!channel) return null
   const link = (href, label, note) => <a className="contact-modal-link" href={href} target="_blank" rel="noreferrer"><span>{label}</span>{note && <small>{note}</small>}<ArrowUpRight size={16} aria-hidden="true" /></a>
   const content = channel.url ? <>{channel.note && <p className="contact-modal-handle">{channel.note}</p>}{link(channel.url, `${channel.label} sahifasini ochish`)}</> : <p>Bu kontakt uchun link hali kiritilmagan.</p>
-  return <div className="contact-modal-backdrop" role="presentation" onMouseDown={event => event.target === event.currentTarget && onClose()}><section className="contact-modal" role="dialog" aria-modal="true" aria-label={`${channel.label} kontaktlari`}><button className="contact-modal-close" type="button" onClick={onClose} aria-label="Modalni yopish"><X size={18} /></button><div className="contact-modal-title"><img src={channel.icon} alt="" /><div><p>CONTACT / {channel.label.toUpperCase()}</p><h3>{channel.label}</h3></div></div><div className="contact-modal-content">{content}</div></section></div>
+  return <div className="contact-modal-backdrop" role="presentation" onMouseDown={event => event.target === event.currentTarget && onClose()}><section className="contact-modal" role="dialog" aria-modal="true" aria-label={`${channel.label} kontaktlari`}><button className="contact-modal-close" type="button" onClick={onClose} aria-label="Modalni yopish"><X size={18} /></button><div className="contact-modal-title">{channel.icon ? <img src={channel.icon} alt="" /> : <span className="contact-modal-fallback">{channel.label?.slice(0, 1).toUpperCase()}</span>}<div><p>CONTACT / {channel.label.toUpperCase()}</p><h3>{channel.label}</h3></div></div><div className="contact-modal-content">{content}</div></section></div>
 }
 
 export default function ContactSection({ lang = 'uz', title, sendLabel, links = defaultChannels }) {

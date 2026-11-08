@@ -9,12 +9,17 @@ const list = value => Array.isArray(value) ? value : []
 
 function cleanContent(value) {
   const about = value?.about || {}
+  const hero = value?.hero || {}
   return {
+    hero: Object.fromEntries(['uz', 'en', 'ru'].map(lang => {
+      const item = hero[lang] || {}
+      return [lang, { badge: text(item.badge, 120), hello: text(item.hello, 120), firstName: text(item.firstName, 120), lastName: text(item.lastName, 120), rolePrefix: text(item.rolePrefix, 80), roles: list(item.roles).slice(0, 20).map(role => text(role, 100)).filter(Boolean), description: text(item.description, 1000), work: text(item.work, 100), contact: text(item.contact, 100), meta: text(item.meta, 160) }]
+    })),
     photos: list(value?.photos).slice(0, 20).map(item => ({ src: safeUrl(item?.src), position: text(item?.position, 40) || 'center' })).filter(item => item.src),
     about: Object.fromEntries(['uz', 'en', 'ru'].map(lang => [lang, list(about[lang]).slice(0, 20).map(item => text(item, 5000)).filter(Boolean)])),
     skills: list(value?.skills).slice(0, 100).map(item => ({ name: text(item?.name, 100), icon: safeUrl(item?.icon), badge: text(item?.badge, 24), category: text(item?.category, 100), description: text(item?.description, 2000) })).filter(item => item.name),
     projects: list(value?.projects).slice(0, 100).map(item => ({
-      title: text(item?.title, 140), slug: text(item?.slug, 100), category: text(item?.category, 100), status: ['completed', 'maintained', 'planned'].includes(item?.status) ? item.status : 'completed', year: text(item?.year, 12), description: text(item?.description, 3000), technologies: list(item?.technologies).slice(0, 20).map(technology => text(technology, 60)).filter(Boolean), icon: safeUrl(item?.icon), type: ['website', 'telegram', 'planned'].includes(item?.type) ? item.type : 'website', link: safeUrl(item?.link),
+      title: text(item?.title, 140), slug: text(item?.slug, 100), category: text(item?.category, 100), status: ['completed', 'maintained', 'planned'].includes(item?.status) ? item.status : 'completed', year: text(item?.year, 12), description: text(item?.description, 3000), technologies: list(item?.technologies).slice(0, 20).map(technology => text(technology, 60)).filter(Boolean), icon: safeUrl(item?.icon), banner: safeUrl(item?.banner), type: ['website', 'telegram', 'planned'].includes(item?.type) ? item.type : 'website', link: safeUrl(item?.link),
     })).filter(item => item.title),
     links: list(value?.links).slice(0, 40).map((item, index) => ({ id: text(item?.id, 80) || `link-${index + 1}`, label: text(item?.label, 100), icon: safeUrl(item?.icon), url: safeUrl(item?.url), note: text(item?.note, 500) })).filter(item => item.label),
   }
