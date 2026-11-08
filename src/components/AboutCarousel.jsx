@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
-const photos = [
+const fallbackPhotos = [
   { src: '/about/bdcbf095-c6cd-466c-b494-17d820b9e40d.png', position: 'center' },
   { src: '/about/MYrasm%20(1).jpg', position: 'center' },
   { src: '/about/MYrasm%20(1).png', position: 'center' },
@@ -9,17 +9,18 @@ const photos = [
   { src: '/about/MYrasm%20(4).jpg', position: 'center' },
 ]
 
-export default function AboutCarousel() {
+export default function AboutCarousel({ photos = fallbackPhotos }) {
   const [active, setActive] = useState(0)
   const touchStartX = useRef(null)
 
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
+    if (!photos.length) return undefined
     const timer = setInterval(() => setActive(index => (index + 1) % photos.length), 4800)
     return () => clearInterval(timer)
-  }, [])
+  }, [photos.length])
 
-  const move = direction => setActive(index => (index + direction + photos.length) % photos.length)
+  const move = direction => photos.length && setActive(index => (index + direction + photos.length) % photos.length)
 
   return <div className="about-carousel" data-tilt>
     <div className="about-photo-stack" onTouchStart={event => { touchStartX.current = event.changedTouches[0].clientX }} onTouchEnd={event => {

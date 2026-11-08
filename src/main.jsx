@@ -9,6 +9,7 @@ import './layout-polish.css'
 import './contact.css'
 import './performance.css'
 import App from './App'
+import AdminApp from './AdminApp'
 
 function AmbientUI() {
   const dot = useRef(null)
@@ -90,6 +91,7 @@ function AmbientUI() {
   return <><div className="scroll-progress"/><div ref={dot} className="cursor-dot" aria-hidden="true"/><div className="tech-floats" aria-hidden="true">{floaters.map(item => <span key={item.label} style={item.style}><img src={item.src} alt="" /></span>)}</div></>
 }
 
+const isAdmin = location.hostname.startsWith('admin.') || location.pathname === '/admin' || location.pathname.startsWith('/admin/')
 createRoot(document.getElementById('root')).render(
-  <StrictMode><AmbientUI /><App /></StrictMode>,
+  <StrictMode>{isAdmin ? <AdminApp /> : <><AmbientUI /><App /></>}</StrictMode>,
 )

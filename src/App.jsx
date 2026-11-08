@@ -4,7 +4,7 @@ import PlexusBackground from './components/PlexusBackground'
 import AboutCarousel from './components/AboutCarousel'
 import ProjectCarousel from './components/ProjectCarousel'
 import ContactSection from './components/ContactSection'
-import { moreWork, planned, projects } from './data/site'
+import { defaultContent } from './data/content'
 
 const SkillPlayground = lazy(() => import('./components/SkillPlayground'))
 
@@ -73,7 +73,7 @@ const workDescriptions = {
   'SOCIAL GROWTH WORKFLOW BOT': 'Workflow automation for social media growth service operators.',
 }
 
-const aboutContent = {
+const fallbackAboutContent = {
   uz: [
     'Men, Abdulmalik Abdumalikov, web dasturlash, avtomatlashtirish va zamonaviy texnologiyalar yordamida foydali raqamli yechimlar yaratishga qiziqadigan dasturchiman. Java, Spring Boot, JavaScript, React, PostgreSQL va REST API kabi texnologiyalar bilan ishlayman. Shuningdek, Telegram botlar, Google Apps Script va turli API integratsiyalari orqali kundalik jarayonlarni soddalashtiruvchi va avtomatlashtiruvchi tizimlar yarataman.',
     'Men uchun dasturlash shunchaki kod yozish emas — mavjud muammoni tushunish va unga sodda, qulay hamda amaliy yechim topishdir. Shu sababli loyihalarimda foydalanuvchi tajribasi, kodning tartibliligi, tizimning barqarorligi va zamonaviy texnologiyalardan to‘g‘ri foydalanishga alohida e’tibor beraman. Web loyihalardan tashqari Telegram botlar, avtomatlashtirish tizimlari va turli raqamli servislar ustida ham ishlayman.',
@@ -128,6 +128,7 @@ function TypedRole({ prefix, roles }) {
 }
 
 export default function App() {
+  const [portfolioContent, setPortfolioContent] = useState(defaultContent)
   const initialLanguage = useMemo(() => {
     const saved = localStorage.getItem('aa-lang')
     if (saved && i18n[saved]) return saved
@@ -151,38 +152,14 @@ export default function App() {
     localStorage.setItem('aa-theme', theme)
   }, [theme])
   useEffect(() => { localStorage.setItem('aa-lang', lang); document.documentElement.lang = lang }, [lang])
+  useEffect(() => {
+    fetch('/api/content').then(response => response.ok ? response.json() : Promise.reject()).then(data => data.content && setPortfolioContent(data.content)).catch(() => {})
+  }, [])
 
   const statusLabel = status => status === 'planned' ? t.planned : status === 'maintained' ? t.active : t.built
   const rolePrefix = lang === 'ru' ? 'Я' : lang === 'en' ? 'I am a' : 'Men'
 
-  const mainProjectItems = [
-    ...projects.filter(project => ['ilmpage', 'pcverse'].includes(project.slug)),
-    { ...moreWork.find(project => project.title === 'PERSONAL PORTFOLIO'), description: workDescriptions['PERSONAL PORTFOLIO'], technologies: ['React', 'Three.js', 'UI/UX'] },
-  ].map(project => ({ ...project, icon: projectIcon[project.slug] || '/original-icons/core-tech/react.svg' }))
-
-  const telegramProjectItems = [
-    ...projects.filter(project => !['ilmpage', 'pcverse'].includes(project.slug)),
-    ...moreWork.filter(project => project.title !== 'PERSONAL PORTFOLIO').map(project => ({
-      ...project,
-      description: workDescriptions[project.title],
-      technologies: ['Telegram', 'Automation'],
-    })),
-  ].map(project => ({ ...project, icon: projectIcon[project.slug] || `/original-icons/projects/${moreWorkIcon[project.title]}` }))
-
-  const plannedProjectItems = planned.map(project => ({
-    ...project,
-    icon: project.title === 'WGRAM' ? '/original-icons/projects/wgram.svg' : '/original-icons/projects/online-bookstore.svg',
-    description: project.title === 'WGRAM'
-      ? 'Future communication platform focused on convenient messaging, file and data sharing workflows.'
-      : 'A future website planned for an online bookstore.',
-    technologies: [],
-  }))
-
-  const allProjectItems = [
-    ...mainProjectItems.map(project => ({ ...project, projectType: 'website' })),
-    ...telegramProjectItems.map(project => ({ ...project, projectType: 'telegram' })),
-    ...plannedProjectItems.map(project => ({ ...project, projectType: 'planned' })),
-  ]
+  const allProjectItems = portfolioContent.projects.map(project => ({ ...project, projectType: project.type || 'website' }))
 
   return <main>
     <header className="nav">
@@ -217,14 +194,14 @@ export default function App() {
     </section>
 
     <section id="about" className="about about-expanded">
-      <AboutCarousel />
+      <AboutCarousel photos={portfolioContent.photos} />
       <div className={`about-copy${aboutFocus ? ' is-focused' : ''}`} data-tilt>
         <div className="about-copy-scroll">
           <div className="about-copy-content">
             <p className="eyebrow">01 / ABOUT ME</p>
             <h2>Developer &amp;<br />Tech Builder</h2>
             <div className="about-copy-body" style={{ zoom: aboutZoom / 100 }}>
-              {aboutContent[lang].map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+              {(portfolioContent.about[lang] || fallbackAboutContent[lang]).map(paragraph => <p key={paragraph}>{paragraph}</p>)}
             </div>
           </div>
         </div>
@@ -237,13 +214,13 @@ export default function App() {
         </div>
       </div>
     </section>
-    <Suspense fallback={<section className="skills-loading">3D SKILLS LOADING…</section>}><SkillPlayground title={t.skills} eyebrow={t.skills} /></Suspense>
+    <Suspense fallback={<section className="skills-loading">3D SKILLS LOADING…</section>}><SkillPlayground title={t.skills} eyebrow={t.skills} items={portfolioContent.skills} /></Suspense>
     <section id="projects" className="projects">
       <div className="projects-shell">
         <div className="projects-intro"><p className="eyebrow">03 / PROJECTS</p><h2>{lang === 'uz' ? 'Loyihalarim' : lang === 'ru' ? 'Мои проекты' : 'My projects'}</h2></div>
         <ProjectCarousel items={allProjectItems} statusLabel={statusLabel} />
       </div>
     </section>
-    <ContactSection lang={lang} title={t.contactTitle} sendLabel={t.send} />
+    <ContactSection lang={lang} title={t.contactTitle} sendLabel={t.send} links={portfolioContent.links} />
   </main>
 }

@@ -12,6 +12,13 @@
 
 Webhook va `getUpdates` bir vaqtda ishlamaydi; production uchun webhookdan foydalaning.
 
+## Admin panel
+
+1. Vercel Environment Variables ichida `ADMIN_INITIAL_USERNAME`, `ADMIN_INITIAL_PASSWORD` va kamida 32 belgilik tasodifiy `ADMIN_SESSION_SECRET` yarating.
+2. `admin.abdulmalik.uz` domenini shu Vercel projectga ulang. Sayt hostname orqali admin panelni avtomatik ochadi; lokal tekshiruv uchun `/admin` ishlaydi.
+3. Admin akkaunti database’da birinchi ishga tushganda yaratiladi. Keyingi login va parol o‘zgarishlari paneldagi **Sozlamalar** bo‘limidan boshqariladi.
+4. `ADMIN_INITIAL_PASSWORD` faqat birinchi yaratishda ishlatiladi. Akkaunt yaratilgach parol database’da `scrypt` hash ko‘rinishida saqlanadi.
+
 ## Forum topiclari va foydalanuvchi xotirasi
 
 1. Audit forum guruhidagi `users`, `commands`, `user_contact` va `questions` topiclarining har biriga alohida `/topicid` yuboring. Bot qaytargan `Topic ID`larni Vercel’dagi mos ravishda `TELEGRAM_TOPIC_USERS_ID`, `TELEGRAM_TOPIC_COMMANDS_ID`, `TELEGRAM_TOPIC_USER_CONTACT_ID` va `TELEGRAM_TOPIC_QUESTIONS_ID` qiymatlariga kiriting.

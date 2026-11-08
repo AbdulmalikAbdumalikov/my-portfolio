@@ -137,6 +137,7 @@ main{position:relative;z-index:1;overflow:hidden;background:transparent}
 .carousel-card h4{margin:23px 0 10px;font-size:clamp(1.6rem,2.15vw,2.35rem);line-height:1;letter-spacing:-.055em}
 .carousel-card p{min-height:58px;margin:0;color:var(--muted);font-size:13px;line-height:1.55}
 .project-tech{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px}.project-tech span{padding:6px 8px;border:1px solid var(--border);border-radius:99px;color:var(--muted);background:var(--glass);font:9px 'DM Mono',monospace}
+.project-managed-link{display:inline-flex;margin-top:14px;color:var(--accent);font:700 10px 'DM Mono',monospace;letter-spacing:.04em}.project-managed-link:hover{text-decoration:underline}
 .project-carousel.is-planned{padding:30px;border:1px dashed color-mix(in srgb,var(--accent) 38%,var(--border));border-radius:30px;background:color-mix(in srgb,var(--accent) 4%,transparent)}
 .is-planned .carousel-card{border-style:dashed;opacity:.9}.is-planned .carousel-art{filter:saturate(.65)}
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Box, Grid3X3, Type, X } from 'lucide-react'
-import { skillDetails, skills } from '../data/skills'
+import { skillDetails as defaultSkillDetails, skills as defaultSkills } from '../data/skills'
 
 const faceNames = ['front', 'back', 'right', 'left', 'top', 'bottom']
 
@@ -16,7 +16,9 @@ function Cube({ skill, index, register }) {
   </div>
 }
 
-export default function SkillPlayground({ title, eyebrow }) {
+export default function SkillPlayground({ title, eyebrow, items = defaultSkills }) {
+  const skills = items.length ? items : defaultSkills
+  const skillDetails = Object.fromEntries(skills.map(skill => [skill.name, [skill.category || defaultSkillDetails[skill.name]?.[0], skill.description || defaultSkillDetails[skill.name]?.[1]]]))
   const [mode, setMode] = useState('icon')
   const [isMobile, setIsMobile] = useState(() => innerWidth < 701)
   const [selectedSkill, setSelectedSkill] = useState(null)

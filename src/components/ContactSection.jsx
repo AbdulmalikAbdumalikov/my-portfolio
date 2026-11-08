@@ -32,7 +32,7 @@ const copy = {
   },
 }
 
-const channels = [
+const defaultChannels = [
   { id: 'instagram', label: 'Instagram', icon: '/social-icons/instagram.svg' },
   { id: 'telegram', label: 'Telegram', icon: '/social-icons/telegram.svg' },
   { id: 'github', label: 'GitHub', icon: '/social-icons/github.svg' },
@@ -52,24 +52,17 @@ function SocialLink({ channel, compact = false, onOpen }) {
 function ContactModal({ channel, onClose }) {
   if (!channel) return null
   const link = (href, label, note) => <a className="contact-modal-link" href={href} target="_blank" rel="noreferrer"><span>{label}</span>{note && <small>{note}</small>}<ArrowUpRight size={16} aria-hidden="true" /></a>
-  const content = {
-    instagram: <div className="contact-modal-accounts">{link('https://www.instagram.com/abdulmalik_developer/', 'abdulmalik_developer', 'Shaxsiy account')}{link('https://www.instagram.com/windows11pro_/', 'windows11pro_', 'Ish account')}</div>,
-    telegram: <><p className="contact-modal-handle">@bot_for_contact_bot</p><p>Kontaktingizni tasdiqlang va mening Telegram profilimni oling.</p>{link('https://t.me/bot_for_contact_bot?start=telegram', 'Botni ochish')}</>,
-    github: <><p className="contact-modal-handle">github.com/AbdulmalikAbdumalikov</p>{link('https://github.com/AbdulmalikAbdumalikov', 'GitHub profilini ochish')}<p className="contact-modal-chance">Javob berish ehtimoli: <b>30%</b></p></>,
-    gmail: <><p className="contact-modal-handle">@bot_for_contact_bot</p><p>Email bo‘yicha murojaat qilish uchun avval botda kontaktingizni tasdiqlang.</p>{link('https://t.me/bot_for_contact_bot?start=email', 'Botni ochish')}</>,
-    linkedin: <><p className="contact-modal-handle">linkedin.com/in/abdulmalikabdumalikov</p>{link('https://www.linkedin.com/in/abdulmalikabdumalikov', 'LinkedIn profilini ochish')}<p className="contact-modal-chance">Javob berish ehtimoli: <b>40%</b></p></>,
-    discord: <><p className="contact-modal-handle">selerown</p><p>Discord’da shu username orqali topishingiz mumkin.</p>{link('https://discord.com', 'Discordni ochish')}<p className="contact-modal-chance">Javob berish ehtimoli: <b>25%</b></p></>,
-    mentors: <div className="contact-modal-accounts">{link('https://www.bunyodbeknurmamatov.uz/', 'bunyodbeknurmamatov.uz')}{link('https://dapper-manatee-c95601.netlify.app/', 'dapper-manatee-c95601.netlify.app')}{link('https://t.me/butterflyeffect_571', '@butterflyeffect_571 / Telegram')}{link('https://www.instagram.com/muhammadali_eshonqulov', 'muhammadali_eshonqulov / Instagram')}{link('https://t.me/Muhammadali_Eshonqulov', '@Muhammadali_Eshonqulov / Telegram')}</div>,
-  }[channel.id]
+  const content = channel.url ? <>{channel.note && <p className="contact-modal-handle">{channel.note}</p>}{link(channel.url, `${channel.label} sahifasini ochish`)}</> : <p>Bu kontakt uchun link hali kiritilmagan.</p>
   return <div className="contact-modal-backdrop" role="presentation" onMouseDown={event => event.target === event.currentTarget && onClose()}><section className="contact-modal" role="dialog" aria-modal="true" aria-label={`${channel.label} kontaktlari`}><button className="contact-modal-close" type="button" onClick={onClose} aria-label="Modalni yopish"><X size={18} /></button><div className="contact-modal-title"><img src={channel.icon} alt="" /><div><p>CONTACT / {channel.label.toUpperCase()}</p><h3>{channel.label}</h3></div></div><div className="contact-modal-content">{content}</div></section></div>
 }
 
-export default function ContactSection({ lang = 'uz', title, sendLabel }) {
+export default function ContactSection({ lang = 'uz', title, sendLabel, links = defaultChannels }) {
   const [pending, setPending] = useState(false)
   const [submitStatus, setSubmitStatus] = useState('')
   const [activeChannel, setActiveChannel] = useState(null)
   const [messageScroll, setMessageScroll] = useState({ visible: false, size: 100, top: 0 })
   const t = copy[lang] || copy.uz
+  const channels = links.length ? links : defaultChannels
 
   const syncMessageScroll = field => {
     const visible = field.scrollHeight > field.clientHeight + 1

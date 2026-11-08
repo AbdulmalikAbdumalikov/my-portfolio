@@ -3,11 +3,11 @@ import { useMemo, useState } from 'react'
 const typeLabels = { website: 'WEB SITE', telegram: 'TELEGRAM BOT', planned: 'REJALASHTIRILGAN' }
 
 function ProjectArtwork({ item, index }) {
-  return <div className="carousel-art"><span>{String(index + 1).padStart(2, '0')}</span><b>{item.title.slice(0, 2)}</b><img src={item.icon} alt="" /></div>
+  return <div className="carousel-art"><span>{String(index + 1).padStart(2, '0')}</span><b>{item.title.slice(0, 2)}</b>{item.icon && <img src={item.icon} alt="" />}</div>
 }
 
 function ProjectCopy({ item, statusLabel }) {
-  return <div className="carousel-card-copy"><div className="project-meta"><small>{item.category}{item.year ? ` · ${item.year}` : ''}</small><em>{statusLabel(item.status)}</em></div><h3>{item.title}</h3><p>{item.description}</p>{item.technologies?.length > 0 && <div className="project-tech">{item.technologies.map(technology => <span key={technology}>{technology}</span>)}</div>}</div>
+  return <div className="carousel-card-copy"><div className="project-meta"><small>{item.category}{item.year ? ` · ${item.year}` : ''}</small><em>{statusLabel(item.status)}</em></div><h3>{item.title}</h3><p>{item.description}</p>{item.technologies?.length > 0 && <div className="project-tech">{item.technologies.map(technology => <span key={technology}>{technology}</span>)}</div>}{item.link && <a className="project-managed-link" href={item.link} target="_blank" rel="noreferrer">Loyihani ochish ↗</a>}</div>
 }
 
 export default function ProjectCarousel({ items, statusLabel }) {
