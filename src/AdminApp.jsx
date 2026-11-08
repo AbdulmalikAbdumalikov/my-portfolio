@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowDown, ArrowLeft, ArrowUp, ChevronDown, ExternalLink, FolderKanban, Image, LayoutDashboard, Link2, LockKeyhole, LogOut, MonitorUp, Plus, Save, Settings, Sparkles, Trash2, Upload, UserRound, Wrench, X } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, ChevronDown, ExternalLink, Eye, EyeOff, FolderKanban, Image, LayoutDashboard, Link2, LockKeyhole, LogOut, MonitorUp, Plus, Save, Settings, Sparkles, Trash2, Upload, UserRound, Wrench, X } from 'lucide-react'
 import { defaultContent } from './data/content'
 import './admin.css'
 
@@ -30,6 +30,11 @@ async function api(url, options = {}) {
 function Field({ label, value, onChange, type = 'text', placeholder = '', textarea = false }) {
   const Tag = textarea ? 'textarea' : 'input'
   return <label className="admin-field"><span>{label}</span><Tag type={textarea ? undefined : type} value={value ?? ''} onChange={event => onChange(event.target.value)} placeholder={placeholder} /></label>
+}
+
+function PasswordField({ label, value, onChange, autoComplete = 'current-password' }) {
+  const [visible, setVisible] = useState(false)
+  return <label className="admin-field admin-password-field"><span>{label}</span><div><input type={visible ? 'text' : 'password'} value={value ?? ''} onChange={event => onChange(event.target.value)} autoComplete={autoComplete} /><button type="button" onClick={() => setVisible(current => !current)} aria-label={visible ? 'Parolni yashirish' : 'Parolni ko‘rsatish'} aria-pressed={visible}>{visible ? <EyeOff /> : <Eye />}</button></div></label>
 }
 
 function LanguageTabs({ value, onChange }) {
@@ -72,7 +77,7 @@ function TagEditor({ tags = [], onChange }) {
 function Login({ onLogin }) {
   const [username, setUsername] = useState('Abdulmalik_Abdumalikov'); const [password, setPassword] = useState(''); const [error, setError] = useState(''); const [pending, setPending] = useState(false)
   const submit = async event => { event.preventDefault(); setPending(true); setError(''); try { const data = await api('/api/admin-auth', { method: 'POST', body: JSON.stringify({ action: 'login', username, password }) }); onLogin(data.username) } catch (reason) { setError(reason.message) } finally { setPending(false) } }
-  return <main className="admin-login-page"><section className="admin-login-card"><div className="admin-login-mark"><LockKeyhole /></div><p className="admin-kicker">ABDULMALIK / CONTROL CENTER</p><h1>Admin panel</h1><p className="admin-muted">Portfolio kontentini xavfsiz boshqaring.</p><form onSubmit={submit}><Field label="LOGIN" value={username} onChange={setUsername} /><Field label="PAROL" type="password" value={password} onChange={setPassword} />{error && <p className="admin-error">{error}</p>}<button className="admin-primary" disabled={pending}>{pending ? 'Tekshirilmoqda…' : 'Kirish'}</button></form><a href="https://abdulmalik.uz"><ArrowLeft /> Portfolio’ga qaytish</a></section></main>
+  return <main className="admin-login-page"><section className="admin-login-card"><div className="admin-login-mark"><LockKeyhole /></div><p className="admin-kicker">ABDULMALIK / CONTROL CENTER</p><h1>Admin panel</h1><p className="admin-muted">Portfolio kontentini xavfsiz boshqaring.</p><form onSubmit={submit}><Field label="LOGIN" value={username} onChange={setUsername} /><PasswordField label="PAROL" value={password} onChange={setPassword} />{error && <p className="admin-error">{error}</p>}<button className="admin-primary" disabled={pending}>{pending ? 'Tekshirilmoqda…' : 'Kirish'}</button></form><a href="https://abdulmalik.uz"><ArrowLeft /> Portfolio’ga qaytish</a></section></main>
 }
 
 function HeroEditor({ content, setContent }) {
@@ -112,7 +117,7 @@ function LinksEditor({ content, setContent, uploadFile }) {
 function SettingsEditor({ username, setUsername }) {
   const [form, setForm] = useState({ username, currentPassword: '', password: '' }); const [status, setStatus] = useState('')
   const submit = async event => { event.preventDefault(); setStatus(''); try { const data = await api('/api/admin-auth', { method: 'POST', body: JSON.stringify({ action: 'change-credentials', ...form }) }); setUsername(data.username); setForm(current => ({ ...current, currentPassword: '', password: '' })); setStatus('Login va parol yangilandi.') } catch (error) { setStatus(error.message) } }
-  return <section><header className="admin-section-head"><div><p>SECURITY</p><h2>Login va parol</h2></div></header><form className="admin-settings-card" onSubmit={submit}><Field label="YANGI LOGIN" value={form.username} onChange={value => setForm(current => ({ ...current, username: value }))} /><Field label="JORIY PAROL" type="password" value={form.currentPassword} onChange={value => setForm(current => ({ ...current, currentPassword: value }))} /><Field label="YANGI PAROL" type="password" value={form.password} onChange={value => setForm(current => ({ ...current, password: value }))} /><p className="admin-muted">Parol kamida 8 belgidan iborat bo‘lishi kerak.</p>{status && <p className={status.includes('yangilandi') ? 'admin-success' : 'admin-error'}>{status}</p>}<button className="admin-primary">Login va parolni almashtirish</button></form></section>
+  return <section><header className="admin-section-head"><div><p>SECURITY</p><h2>Login va parol</h2></div></header><form className="admin-settings-card" onSubmit={submit}><Field label="YANGI LOGIN" value={form.username} onChange={value => setForm(current => ({ ...current, username: value }))} /><PasswordField label="JORIY PAROL" value={form.currentPassword} onChange={value => setForm(current => ({ ...current, currentPassword: value }))} /><PasswordField label="YANGI PAROL" value={form.password} autoComplete="new-password" onChange={value => setForm(current => ({ ...current, password: value }))} /><p className="admin-muted">Parol kamida 8 belgidan iborat bo‘lishi kerak.</p>{status && <p className={status.includes('yangilandi') ? 'admin-success' : 'admin-error'}>{status}</p>}<button className="admin-primary">Login va parolni almashtirish</button></form></section>
 }
 
 function Empty({ text }) { return <div className="admin-empty"><Wrench /><p>{text}</p></div> }
