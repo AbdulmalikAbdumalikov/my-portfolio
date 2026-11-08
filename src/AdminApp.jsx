@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { ArrowDown, ArrowLeft, ArrowUp, ExternalLink, FolderKanban, Image, Link2, LockKeyhole, LogOut, Plus, Save, Settings, Sparkles, Trash2, UserRound, Wrench } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, ExternalLink, FolderKanban, Image, LayoutDashboard, Link2, LockKeyhole, LogOut, Plus, Save, Settings, Sparkles, Trash2, UserRound, Wrench } from 'lucide-react'
 import { defaultContent } from './data/content'
 import './admin.css'
 
 const tabs = [
-  ['photos', 'Rasmlar', Image], ['about', 'Men haqimda', UserRound], ['skills', 'Qobiliyatlar', Sparkles],
+  ['dashboard', 'Boshqaruv', LayoutDashboard], ['photos', 'Rasmlar', Image], ['about', 'Men haqimda', UserRound], ['skills', 'Qobiliyatlar', Sparkles],
   ['projects', 'Loyihalar', FolderKanban], ['links', 'Linklar', Link2], ['settings', 'Sozlamalar', Settings],
 ]
 const clone = value => JSON.parse(JSON.stringify(value))
@@ -98,10 +98,21 @@ function SettingsEditor({ username, setUsername }) {
 
 function Empty({ text }) { return <div className="admin-empty"><Wrench /><p>{text}</p></div> }
 
+function Dashboard({ content, openTab }) {
+  const cards = [
+    ['photos', 'Rasmlar', content.photos.length, Image, 'Portfolio galereyasi'],
+    ['about', 'Men haqimda', Object.values(content.about).reduce((total, list) => total + list.length, 0), UserRound, '3 tildagi matnlar'],
+    ['skills', 'Qobiliyatlar', content.skills.length, Sparkles, 'Texnologiya va vositalar'],
+    ['projects', 'Loyihalar', content.projects.length, FolderKanban, 'Faol va rejalashtirilgan'],
+    ['links', 'Linklar', content.links.length, Link2, 'Ijtimoiy va tashqi linklar'],
+  ]
+  return <section className="admin-dashboard"><div className="admin-welcome"><div><p className="admin-kicker">PORTFOLIO CONTROL CENTER</p><h2>Kontentingizni bir joydan boshqaring.</h2><p>Kerakli bo‘limni tanlang, o‘zgarish kiriting va yuqoridagi <b>Saqlash</b> tugmasini bosing.</p></div>{content.photos[0]?.src && <img src={content.photos[0].src} alt="Portfolio preview" />}</div><div className="admin-overview-grid">{cards.map(([id, label, count, Icon, note]) => <button type="button" onClick={() => openTab(id)} key={id}><span><Icon /></span><div><strong>{count}</strong><b>{label}</b><small>{note}</small></div><ArrowLeft className="admin-card-arrow" /></button>)}</div><div className="admin-dashboard-note"><span><i /></span><div><b>Portfolio bilan sinxron</b><p>Saqlangan o‘zgarishlar avtomatik ravishda asosiy saytda ko‘rinadi.</p></div><a href="https://abdulmalik.uz" target="_blank" rel="noreferrer">Saytni ko‘rish <ExternalLink /></a></div></section>
+}
+
 export default function AdminApp() {
   const [auth, setAuth] = useState({ checking: true, username: '' })
   const [content, setContent] = useState(clone(defaultContent))
-  const [tab, setTab] = useState('photos')
+  const [tab, setTab] = useState('dashboard')
   const [status, setStatus] = useState('')
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -124,6 +135,7 @@ export default function AdminApp() {
   const active = tabs.find(([id]) => id === tab)
   return <div className="admin-shell"><aside className="admin-sidebar"><a className="admin-brand" href="https://abdulmalik.uz"><img src="/brand/aa-mark.png" alt="AA" /><span>CONTROL<br />CENTER</span></a><nav>{tabs.map(([id, label, Icon]) => <button className={tab === id ? 'active' : ''} onClick={() => setTab(id)} key={id}><Icon />{label}</button>)}</nav><div className="admin-sidebar-bottom"><a href="https://abdulmalik.uz" target="_blank" rel="noreferrer"><ExternalLink /> Saytni ochish</a><button onClick={logout}><LogOut /> Chiqish</button></div></aside>
     <main className="admin-main"><header className="admin-topbar"><div><p>ADMIN / {active?.[0].toUpperCase()}</p><h1>{active?.[1]}</h1></div><div><span className="admin-user"><i />{auth.username}</span><button className="admin-save" onClick={save} disabled={saving}><Save />{saving ? 'Saqlanmoqda…' : 'Saqlash'}</button></div></header>{status && <div className={status.includes('saqlandi') || status.includes('yuklandi') ? 'admin-toast success' : 'admin-toast'}>{status}</div>}<div className="admin-workspace">
+      {tab === 'dashboard' && <Dashboard content={content} openTab={setTab} />}
       {tab === 'photos' && <PhotosEditor content={content} setContent={setContent} upload={upload} busy={uploading} />}
       {tab === 'about' && <AboutEditor content={content} setContent={setContent} />}
       {tab === 'skills' && <SkillsEditor content={content} setContent={setContent} />}
