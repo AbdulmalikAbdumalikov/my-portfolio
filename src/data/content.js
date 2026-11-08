@@ -1,5 +1,5 @@
-import { moreWork, planned, projects } from './site'
-import { skillDetails, skills } from './skills'
+import { moreWork, planned, projects } from './site.js'
+import { skillDetails, skills } from './skills.js'
 
 const projectIcons = {
   ilmpage: '/original-icons/projects/ilmpage.svg',
