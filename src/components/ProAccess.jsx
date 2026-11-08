@@ -4,12 +4,12 @@ import { KeyRound, LockKeyhole, Palette, X } from 'lucide-react'
 const STORAGE_KEY = 'aa-pro-access'
 const DEVICE_KEY = 'aa-pro-device'
 const styles = [
-  ['glassmorphism', 'Glassmorphism', 'Shaffof va yorqin'],
-  ['liquid-glass', 'Liquid glass', 'Suyuqlikdek yumshoq'],
-  ['neomorphism', 'Neomorphism', 'Yumshoq 3D'],
-  ['skeuomorphism', 'Skeuomorphism', 'Real obyekt hissi'],
-  ['minimalism', 'Minimalism', 'Toza va sokin'],
-  ['maximalism', 'Maximalism', 'Ko‘p rangli va jasur'],
+  ['glassmorphism', 'Glassmorphism', 'Aurora fon va shaffof qatlamlar'],
+  ['liquid-glass', 'Liquid glass', 'Refraktiv, suyuq va yorqin shakllar'],
+  ['neomorphism', 'Neomorphism', 'Yumshoq relyef va sokin palitra'],
+  ['skeuomorphism', 'Skeuomorphism', 'Charm, metall va real boshqaruvlar'],
+  ['minimalism', 'Minimalism', 'Tipografika, grid va aniq kontrast'],
+  ['maximalism', 'Maximalism', 'Poster ranglari va jasur kompozitsiya'],
 ]
 
 function readSession() {
@@ -122,7 +122,7 @@ export default function ProAccess() {
         <div className="pro-access-heading"><span><LockKeyhole size={18} /></span><div><p>ONE-TIME ACCESS</p><h2 id="pro-access-title">Pro styles</h2></div></div>
         {session ? <>
           <p className="pro-access-note">Sayt ko‘rinishini tanlang. Sessiya <b>6 soat</b> amal qiladi.</p>
-          <div className="pro-style-grid">{styles.map(([id, name, note]) => <button type="button" className={session.style === id ? 'active' : ''} onClick={() => chooseStyle(id)} disabled={loading} key={id}><Palette size={16} /><b>{name}</b><small>{note}</small></button>)}</div>
+          <div className="pro-style-grid">{styles.map(([id, name, note]) => <button type="button" data-style={id} className={session.style === id ? 'active' : ''} onClick={() => chooseStyle(id)} disabled={loading} key={id}><Palette size={16} /><b>{name}</b><small>{note}</small></button>)}</div>
         </> : <form className="pro-code-form" onSubmit={redeem}>
           <p className="pro-access-note">Telegram botdagi <b>🔑 Bir martalik code yaratish</b> tugmasidan olingan code’ni kiriting. Har bir code faqat bir marta ishlaydi.</p>
           <label><span>PRO CODE</span><input value={code} onChange={event => setCode(event.target.value.toUpperCase())} placeholder="PRO-XXXXXXXX" maxLength="12" autoComplete="one-time-code" autoFocus required /></label>
