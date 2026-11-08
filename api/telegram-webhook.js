@@ -1,13 +1,10 @@
 import { env, html, sendHtml, telegram } from './_telegram.js'
-import { getUserProfile, getVisitorProfile, hasUserStore, issueProCode, saveUserProfile, saveVisitorProfile } from './_store.js'
-import { createProCode, hashValue } from './_pro.js'
+import { getUserProfile, getVisitorProfile, hasUserStore, saveUserProfile, saveVisitorProfile } from './_store.js'
 
 const TEAM_INVITE_URL = 'https://t.me/+NZqQCwLt0agxOTMy'
 const TEAM_CHAT_ID = () => env('TELEGRAM_TEAM_CHAT_ID') || '-1004323111381'
 const AUDIT_CHAT_ID = () => env('TELEGRAM_AUDIT_CHAT_ID')
 const OWNER_CHAT_ID = () => env('TELEGRAM_OWNER_CHAT_ID') || '6876382325'
-const PRO_GROUP_CHAT_ID = () => env('TELEGRAM_PRO_GROUP_CHAT_ID') || '-1004480846914'
-const PRO_TOPIC_ID = () => Number(env('TELEGRAM_PRO_TOPIC_ID') || 69)
 const ownerUsername = () => env('PORTFOLIO_TELEGRAM_USERNAME') || 'Abdulmalik_Abdumalikov'
 const topicEnv = { users: 'TELEGRAM_TOPIC_USERS_ID', commands: 'TELEGRAM_TOPIC_COMMANDS_ID', userContact: 'TELEGRAM_TOPIC_USER_CONTACT_ID', questions: 'TELEGRAM_TOPIC_QUESTIONS_ID' }
 const commonBlockedWords = ['fuck', 'shit', 'bitch', 'asshole', 'сука', 'блять', 'хуй', 'пизда', 'ебать', 'мудак', 'долбоеб']
@@ -37,30 +34,15 @@ const userSnapshot = user => ({
 const sameSnapshot = (left, right) => left && right && Object.keys(right).every(key => left[key] === right[key])
 
 function contactKeyboard() {
-  return { keyboard: [[{ text: '📱 Kontaktimni ulashaman', request_contact: true }], ['🔑 Bir martalik code yaratish']], resize_keyboard: true, one_time_keyboard: true }
+  return { keyboard: [[{ text: '📱 Kontaktimni ulashaman', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true }
 }
 
 function mainMenu() {
-  const keyboard = [['🌐 Site', '❓ Savol berish'], ['💳 Donate', '🤝 Bizning jamoaga qo‘shilish'], ['🔑 Bir martalik code yaratish']]
+  const keyboard = [['🌐 Site', '❓ Savol berish'], ['💳 Donate', '🤝 Bizning jamoaga qo‘shilish']]
   return { keyboard, resize_keyboard: true, is_persistent: true }
 }
 
 const isOwner = userId => String(userId) === OWNER_CHAT_ID()
-
-async function proAudit(text) {
-  try {
-    await sendHtml(PRO_GROUP_CHAT_ID(), text, { message_thread_id: PRO_TOPIC_ID() })
-  } catch (error) {
-    console.error('Pro audit failed:', error.message)
-  }
-}
-
-async function issueCodeForUser(chatId, userId) {
-  const code = createProCode()
-  if (!await issueProCode(userId, hashValue(code))) return sendHtml(chatId, 'Code yaratilmadi. Database sozlamalarini tekshiring.')
-  await proAudit(`<b>Pro code yaratildi</b>\n<b>User ID:</b> <code>${html(userId)}</code>\n<b>Code:</b> <code>${html(code)}</code>`)
-  return sendHtml(chatId, `<b>Sizning bir martalik Pro code’ingiz:</b>\n\n<code>${html(code)}</code>\n\nBu code faqat bir marta ishlaydi. Uni saytdagi navbar ichidagi <b>PRO</b> tugmasiga kiriting; Pro style ushbu qurilmada 6 soat amal qiladi.`, { reply_markup: mainMenu() })
-}
 
 const chatRequests = {
   '/own_channel': { requestId: 201, label: '📢 O‘z kanalimni tanlash', chatIsChannel: true, chatIsCreated: true, title: 'O‘zingiz yaratgan kanalni tanlang.' },
@@ -151,7 +133,6 @@ async function handlePrivateMessage(message) {
     return sendHtml(chat.id, `<b>${request}</b> uchun avval pastdagi tugma orqali kontaktingizni tasdiqlang.`, { reply_markup: contactKeyboard() })
   }
 
-  if (text === '🔑 Bir martalik code yaratish' || text === '🔑 Code olish' || command === '/code') return issueCodeForUser(chat.id, from.id)
   if (text === '🌐 Site') return sendHtml(chat.id, '<a href="https://abdulmalik.uz">abdulmalik.uz</a>', { reply_markup: await menuForUser(from.id) })
   if (text === '💳 Donate' || command === '/donate') return sendHtml(chat.id, '<b>Donate</b>\n\nHozircha test karta: <code>1234 1234 1234 1324</code>\n\nHaqiqiy karta keyin yangilanadi.', { reply_markup: await menuForUser(from.id) })
   if (text === '❓ Savol berish') return sendHtml(chat.id, 'Savolingizni yozing. U alohida topicga yuboriladi.', { reply_markup: { force_reply: true, input_field_placeholder: 'Savolingizni yozing…' } })
