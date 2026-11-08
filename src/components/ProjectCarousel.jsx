@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ArrowUpRight, ExternalLink, X } from 'lucide-react'
 
 const typeLabels = { website: 'WEB SITE', telegram: 'TELEGRAM BOT', planned: 'REJALASHTIRILGAN' }
@@ -15,15 +16,19 @@ function ProjectCopy({ item, statusLabel }) {
 }
 
 function ProjectModal({ item, statusLabel, onClose }) {
+  const closeButton = useRef(null)
   useEffect(() => {
     const close = event => event.key === 'Escape' && onClose()
+    const previousFocus = document.activeElement
+    const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', close)
-    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', close) }
+    closeButton.current?.focus()
+    return () => { document.body.style.overflow = previousOverflow; window.removeEventListener('keydown', close); previousFocus?.focus?.() }
   }, [onClose])
-  return <div className="project-modal-backdrop" onMouseDown={event => event.target === event.currentTarget && onClose()}>
+  return createPortal(<div className="project-modal-backdrop" onMouseDown={event => event.target === event.currentTarget && onClose()}>
     <article className="project-modal" role="dialog" aria-modal="true" aria-label={`${item.title} loyiha tafsilotlari`}>
-      <button className="project-modal-close" onClick={onClose} aria-label="Yopish"><X /></button>
+      <button ref={closeButton} className="project-modal-close" onClick={onClose} aria-label="Yopish"><X /></button>
       <div className={`project-modal-visual${item.banner ? ' has-banner' : ''}`}>
         {item.banner ? <img className="project-modal-banner" src={item.banner} alt={`${item.title} banneri`} /> : <div className="project-modal-banner-placeholder" />}
         {item.icon && <span className="project-modal-icon"><img src={item.icon} alt={`${item.title} ikonkasi`} /></span>}
@@ -35,7 +40,7 @@ function ProjectModal({ item, statusLabel, onClose }) {
         {item.link ? <a className="project-modal-link" href={item.link} target="_blank" rel="noreferrer">Loyihani ochish <ExternalLink size={17} /></a> : <div className="project-modal-link is-disabled">Link mavjud emas</div>}
       </div>
     </article>
-  </div>
+  </div>, document.body)
 }
 
 export default function ProjectCarousel({ items, statusLabel }) {
