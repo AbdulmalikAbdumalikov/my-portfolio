@@ -119,12 +119,12 @@ export default function ProAccess() {
     {open && <div className="pro-access-backdrop" role="presentation" onMouseDown={event => event.target === event.currentTarget && setOpen(false)}>
       <section className="pro-access-panel" role="dialog" aria-modal="true" aria-labelledby="pro-access-title">
         <button className="pro-access-close" type="button" onClick={() => setOpen(false)} aria-label="Pro menyuni yopish"><X size={18} /></button>
-        <div className="pro-access-heading"><span><LockKeyhole size={18} /></span><div><p>PRIVATE ACCESS</p><h2 id="pro-access-title">Pro styles</h2></div></div>
+        <div className="pro-access-heading"><span><LockKeyhole size={18} /></span><div><p>ONE-TIME ACCESS</p><h2 id="pro-access-title">Pro styles</h2></div></div>
         {session ? <>
           <p className="pro-access-note">Sayt ko‘rinishini tanlang. Sessiya <b>6 soat</b> amal qiladi.</p>
           <div className="pro-style-grid">{styles.map(([id, name, note]) => <button type="button" className={session.style === id ? 'active' : ''} onClick={() => chooseStyle(id)} disabled={loading} key={id}><Palette size={16} /><b>{name}</b><small>{note}</small></button>)}</div>
         </> : <form className="pro-code-form" onSubmit={redeem}>
-          <p className="pro-access-note">Telegram botdagi <b>🔑 Code olish</b> tugmasidan olingan bir martalik code’ni kiriting.</p>
+          <p className="pro-access-note">Telegram botdagi <b>🔑 Bir martalik code yaratish</b> tugmasidan olingan code’ni kiriting. Har bir code faqat bir marta ishlaydi.</p>
           <label><span>PRO CODE</span><input value={code} onChange={event => setCode(event.target.value.toUpperCase())} placeholder="PRO-XXXXXXXX" maxLength="12" autoComplete="one-time-code" autoFocus required /></label>
           <button type="submit" disabled={loading}>{loading ? 'Tekshirilmoqda…' : 'Kirish'}</button>
         </form>}

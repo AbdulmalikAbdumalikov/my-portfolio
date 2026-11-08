@@ -38,11 +38,12 @@ async function ensureSchema() {
       );
       CREATE TABLE IF NOT EXISTS portfolio_pro_codes (
         id BIGSERIAL PRIMARY KEY,
-        user_id BIGINT NOT NULL REFERENCES portfolio_pro_users(user_id) ON DELETE CASCADE,
+        user_id BIGINT NOT NULL,
         code_hash TEXT NOT NULL UNIQUE,
         issued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         used_at TIMESTAMPTZ
       );
+      ALTER TABLE portfolio_pro_codes DROP CONSTRAINT IF EXISTS portfolio_pro_codes_user_id_fkey;
       CREATE TABLE IF NOT EXISTS portfolio_pro_sessions (
         id BIGSERIAL PRIMARY KEY,
         user_id BIGINT NOT NULL,
@@ -165,8 +166,13 @@ export async function issueProCode(userId, codeHash) {
     const client = await ensureSchema()
     if (!client) return false
     const result = await client.query(`
+      WITH invalidated AS (
+        UPDATE portfolio_pro_codes
+        SET used_at = NOW()
+        WHERE user_id = $1 AND used_at IS NULL
+      )
       INSERT INTO portfolio_pro_codes (user_id, code_hash)
-      SELECT user_id, $2 FROM portfolio_pro_users WHERE user_id = $1 AND active = TRUE
+      VALUES ($1, $2)
       RETURNING id
     `, [userId, codeHash])
     return result.rowCount > 0
@@ -192,11 +198,10 @@ export async function redeemProCode(codeHash, deviceHash, tokenHash, expiresAt) 
       return { ok: false, reason: 'cooldown', expiresAt: active.rows[0].expires_at }
     }
     const code = await connection.query(`
-      UPDATE portfolio_pro_codes c
+      UPDATE portfolio_pro_codes
       SET used_at = NOW()
-      FROM portfolio_pro_users p
-      WHERE c.code_hash = $1 AND c.user_id = p.user_id AND p.active = TRUE AND c.used_at IS NULL
-      RETURNING c.user_id
+      WHERE code_hash = $1 AND used_at IS NULL
+      RETURNING user_id
     `, [codeHash])
     if (!code.rowCount) {
       await connection.query('ROLLBACK')

@@ -1,5 +1,5 @@
 import { env, html, sendHtml, telegram } from './_telegram.js'
-import { addProUser, getUserProfile, getVisitorProfile, hasUserStore, isProUser, issueProCode, listProUsers, listVisitorProfiles, saveUserProfile, saveVisitorProfile } from './_store.js'
+import { getUserProfile, getVisitorProfile, hasUserStore, issueProCode, saveUserProfile, saveVisitorProfile } from './_store.js'
 import { createProCode, hashValue } from './_pro.js'
 
 const TEAM_INVITE_URL = 'https://t.me/+NZqQCwLt0agxOTMy'
@@ -37,13 +37,11 @@ const userSnapshot = user => ({
 const sameSnapshot = (left, right) => left && right && Object.keys(right).every(key => left[key] === right[key])
 
 function contactKeyboard() {
-  return { keyboard: [[{ text: '📱 Kontaktimni ulashaman', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true }
+  return { keyboard: [[{ text: '📱 Kontaktimni ulashaman', request_contact: true }], ['🔑 Bir martalik code yaratish']], resize_keyboard: true, one_time_keyboard: true }
 }
 
-function mainMenu({ admin = false, pro = false } = {}) {
-  const keyboard = [['🌐 Site', '❓ Savol berish'], ['💳 Donate', '🤝 Bizning jamoaga qo‘shilish']]
-  if (pro) keyboard.push(['🔑 Code olish'])
-  if (admin) keyboard.push(['👑 Pro users'])
+function mainMenu() {
+  const keyboard = [['🌐 Site', '❓ Savol berish'], ['💳 Donate', '🤝 Bizning jamoaga qo‘shilish'], ['🔑 Bir martalik code yaratish']]
   return { keyboard, resize_keyboard: true, is_persistent: true }
 }
 
@@ -57,16 +55,11 @@ async function proAudit(text) {
   }
 }
 
-function proAdminMenu() {
-  return { keyboard: [['➕ Pro user qo‘shish'], ['📋 Pro userlar'], ['⬅️ Orqaga']], resize_keyboard: true, is_persistent: true }
-}
-
 async function issueCodeForUser(chatId, userId) {
-  if (!await isProUser(userId)) return sendHtml(chatId, 'Siz hali Pro user sifatida qo‘shilmagansiz.')
   const code = createProCode()
   if (!await issueProCode(userId, hashValue(code))) return sendHtml(chatId, 'Code yaratilmadi. Database sozlamalarini tekshiring.')
   await proAudit(`<b>Pro code yaratildi</b>\n<b>User ID:</b> <code>${html(userId)}</code>\n<b>Code:</b> <code>${html(code)}</code>`)
-  return sendHtml(chatId, `<b>Sizning bir martalik Pro code’ingiz:</b>\n\n<code>${html(code)}</code>\n\nBu code faqat bir marta ishlaydi va kiritilgandan keyin ushbu qurilmada 6 soat amal qiladi.`, { reply_markup: mainMenu({ pro: true }) })
+  return sendHtml(chatId, `<b>Sizning bir martalik Pro code’ingiz:</b>\n\n<code>${html(code)}</code>\n\nBu code faqat bir marta ishlaydi. Uni saytdagi navbar ichidagi <b>PRO</b> tugmasiga kiriting; Pro style ushbu qurilmada 6 soat amal qiladi.`, { reply_markup: mainMenu() })
 }
 
 const chatRequests = {
@@ -112,47 +105,7 @@ async function showMainMenu(chatId, note = 'Asosiy menyu tayyor.', userId = null
 }
 
 async function menuForUser(userId) {
-  return mainMenu({ admin: userId !== null && isOwner(userId), pro: userId !== null && await isProUser(userId) })
-}
-
-async function showProUserPicker(chatId) {
-  const users = (await listVisitorProfiles()).filter(user => !user.is_pro)
-  if (!users.length) return sendHtml(chatId, 'Qo‘shish uchun hali botdan o‘tgan yangi user topilmadi.', { reply_markup: proAdminMenu() })
-  const inline_keyboard = users.slice(0, 30).map(row => {
-    const visitor = row.visitor || {}
-    const name = [visitor.firstName, visitor.lastName].filter(Boolean).join(' ') || visitor.username || row.user_id
-    return [{ text: `${name} · ${row.user_id}`, callback_data: `pro:add:${row.user_id}` }]
-  })
-  return sendHtml(chatId, '<b>Pro userga aylantirish uchun userni tanlang:</b>', { reply_markup: { inline_keyboard } })
-}
-
-async function showProUsers(chatId) {
-  const users = await listProUsers()
-  if (!users.length) return sendHtml(chatId, 'Hozircha Pro userlar yo‘q.', { reply_markup: proAdminMenu() })
-  const lines = users.map((row, index) => {
-    const visitor = row.visitor || {}
-    const name = [visitor.firstName, visitor.lastName].filter(Boolean).join(' ') || visitor.username || 'Noma’lum'
-    return `${index + 1}. <b>${html(name)}</b> — <code>${html(row.user_id)}</code>`
-  })
-  return sendHtml(chatId, `<b>Pro userlar:</b>\n\n${lines.join('\n')}`, { reply_markup: proAdminMenu() })
-}
-
-async function handleCallbackQuery(query) {
-  const from = query.from || {}
-  if (!isOwner(from.id)) {
-    await telegram('answerCallbackQuery', { callback_query_id: query.id, text: 'Bu menyu faqat admin uchun.', show_alert: true })
-    return
-  }
-  const data = query.data || ''
-  if (data.startsWith('pro:add:')) {
-    const userId = Number(data.slice('pro:add:'.length))
-    const added = Number.isSafeInteger(userId) && await addProUser(userId, from.id)
-    await telegram('answerCallbackQuery', { callback_query_id: query.id, text: added ? 'Pro user qo‘shildi.' : 'Qo‘shib bo‘lmadi.' })
-    if (added) {
-      await proAudit(`<b>Yangi Pro user qo‘shildi</b>\n<b>User ID:</b> <code>${html(userId)}</code>\n<b>Admin:</b> <code>${html(from.id)}</code>`)
-      return sendHtml(query.message.chat.id, `User <code>${html(userId)}</code> Pro user sifatida qo‘shildi. Endi u botdagi <b>🔑 Code olish</b> tugmasidan code olishi mumkin.`, { reply_markup: proAdminMenu() })
-    }
-  }
+  return mainMenu()
 }
 
 async function handlePrivateMessage(message) {
@@ -193,16 +146,12 @@ async function handlePrivateMessage(message) {
       if (hasUserStore()) await saveVisitorProfile(from.id, visitor)
     }
     const profile = hasUserStore() ? await getUserProfile(from.id) : null
-    const pro = hasUserStore() && await isProUser(from.id)
-    if (profile || pro || isOwner(from.id)) return showMainMenu(chat.id, pro ? 'Pro menyu tayyor.' : `Qaytganingizdan xursandmiz, ${html(profile?.firstName || 'admin')}.`, from.id)
+    if (profile || isOwner(from.id)) return showMainMenu(chat.id, `Qaytganingizdan xursandmiz, ${html(profile?.firstName || 'admin')}.`, from.id)
     const request = source === 'email' ? 'Gmail bo‘yicha murojaat qilish' : 'Telegram kontaktini olish'
     return sendHtml(chat.id, `<b>${request}</b> uchun avval pastdagi tugma orqali kontaktingizni tasdiqlang.`, { reply_markup: contactKeyboard() })
   }
 
-  if (isOwner(from.id) && text === '👑 Pro users') return sendHtml(chat.id, '<b>Pro users boshqaruvi</b>', { reply_markup: proAdminMenu() })
-  if (isOwner(from.id) && text === '➕ Pro user qo‘shish') return showProUserPicker(chat.id)
-  if (isOwner(from.id) && text === '📋 Pro userlar') return showProUsers(chat.id)
-  if (text === '🔑 Code olish') return issueCodeForUser(chat.id, from.id)
+  if (text === '🔑 Bir martalik code yaratish' || text === '🔑 Code olish' || command === '/code') return issueCodeForUser(chat.id, from.id)
   if (text === '🌐 Site') return sendHtml(chat.id, '<a href="https://abdulmalik.uz">abdulmalik.uz</a>', { reply_markup: await menuForUser(from.id) })
   if (text === '💳 Donate' || command === '/donate') return sendHtml(chat.id, '<b>Donate</b>\n\nHozircha test karta: <code>1234 1234 1234 1324</code>\n\nHaqiqiy karta keyin yangilanadi.', { reply_markup: await menuForUser(from.id) })
   if (text === '❓ Savol berish') return sendHtml(chat.id, 'Savolingizni yozing. U alohida topicga yuboriladi.', { reply_markup: { force_reply: true, input_field_placeholder: 'Savolingizni yozing…' } })
@@ -249,8 +198,7 @@ export default async function handler(req, res) {
   if (!secret || req.headers['x-telegram-bot-api-secret-token'] !== secret) return res.status(401).end()
   try {
     const update = req.body || {}
-    if (update.callback_query) await handleCallbackQuery(update.callback_query)
-    else if (update.message?.chat?.type === 'private') await handlePrivateMessage(update.message)
+    if (update.message?.chat?.type === 'private') await handlePrivateMessage(update.message)
     else if (update.message) await handleGroupMessage(update.message)
     else if (update.chat_member) await handleMemberUpdate(update)
     return res.status(200).json({ ok: true })
