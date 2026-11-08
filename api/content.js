@@ -22,10 +22,14 @@ function cleanContent(value) {
 
 export default async function handler(req, res) {
   try {
+    // Portfolio content is edited from the admin subdomain. Never let Vercel's
+    // edge cache serve an older copy after a successful save.
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    res.setHeader('CDN-Cache-Control', 'no-store')
+    res.setHeader('Vercel-CDN-Cache-Control', 'no-store')
     const client = await ensureAdminSchema()
     if (req.method === 'GET') {
       const result = await client.query('SELECT content, updated_at FROM portfolio_admin_content WHERE id = 1')
-      res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=30, stale-while-revalidate=120')
       return res.status(200).json({ content: result.rows[0]?.content, updatedAt: result.rows[0]?.updated_at })
     }
     if (req.method !== 'PUT') return res.status(405).json({ error: 'Method not allowed' })

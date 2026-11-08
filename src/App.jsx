@@ -153,7 +153,23 @@ export default function App() {
   }, [theme])
   useEffect(() => { localStorage.setItem('aa-lang', lang); document.documentElement.lang = lang }, [lang])
   useEffect(() => {
-    fetch('/api/content').then(response => response.ok ? response.json() : Promise.reject()).then(data => data.content && setPortfolioContent(data.content)).catch(() => {})
+    let active = true
+    const syncContent = () => fetch(`/api/content?fresh=${Date.now()}`, { cache: 'no-store' })
+      .then(response => response.ok ? response.json() : Promise.reject())
+      .then(data => { if (active && data.content) setPortfolioContent(data.content) })
+      .catch(() => {})
+    const syncWhenVisible = () => { if (document.visibilityState === 'visible') syncContent() }
+
+    syncContent()
+    const timer = window.setInterval(syncWhenVisible, 15000)
+    window.addEventListener('focus', syncContent)
+    document.addEventListener('visibilitychange', syncWhenVisible)
+    return () => {
+      active = false
+      window.clearInterval(timer)
+      window.removeEventListener('focus', syncContent)
+      document.removeEventListener('visibilitychange', syncWhenVisible)
+    }
   }, [])
 
   const statusLabel = status => status === 'planned' ? t.planned : status === 'maintained' ? t.active : t.built
