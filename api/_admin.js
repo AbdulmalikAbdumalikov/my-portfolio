@@ -6,6 +6,9 @@ import { defaultContent } from '../src/data/content.js'
 const { Pool } = pg
 const COOKIE_NAME = 'abdulmalik_admin_session'
 const SESSION_SECONDS = 8 * 60 * 60
+const INITIAL_USERNAME = 'Abdulmalik_Abdumalikov'
+const INITIAL_PASSWORD_SALT = 'a688794412b471f9a69cc639d3b7ac06ce0b77a744ff4cbd'
+const INITIAL_PASSWORD_HASH = 'a3b018781efe5fc9c6ee0f13738296b9385f02cba80717bf48b4708a8d5d7bea2d996ebdd859fd1f65e9202a3c03d7ae82be1f6b7dc92c0e16ab136a92529afa'
 let pool
 let schemaPromise
 
@@ -53,11 +56,11 @@ export async function ensureAdminSchema() {
       `)
       const user = await client.query('SELECT 1 FROM portfolio_admin_users WHERE id = 1')
       if (!user.rowCount) {
-        const username = env('ADMIN_INITIAL_USERNAME')
+        const username = env('ADMIN_INITIAL_USERNAME') || env('PORTFOLIO_TELEGRAM_USERNAME') || INITIAL_USERNAME
         const password = env('ADMIN_INITIAL_PASSWORD')
-        if (!username || !password) throw new Error('Initial admin credentials are not configured')
-        const salt = crypto.randomBytes(24).toString('hex')
-        await client.query('INSERT INTO portfolio_admin_users (id, username, password_hash, password_salt) VALUES (1, $1, $2, $3)', [username, await scrypt(password, salt), salt])
+        const salt = password ? crypto.randomBytes(24).toString('hex') : INITIAL_PASSWORD_SALT
+        const passwordHash = password ? await scrypt(password, salt) : INITIAL_PASSWORD_HASH
+        await client.query('INSERT INTO portfolio_admin_users (id, username, password_hash, password_salt) VALUES (1, $1, $2, $3)', [username, passwordHash, salt])
       }
       await client.query('INSERT INTO portfolio_admin_content (id, content) VALUES (1, $1::jsonb) ON CONFLICT (id) DO NOTHING', [JSON.stringify(defaultContent)])
       return client
@@ -81,7 +84,7 @@ export async function verifyCredentials(username, password) {
 }
 
 function sessionSecret() {
-  const secret = env('ADMIN_SESSION_SECRET')
+  const secret = env('ADMIN_SESSION_SECRET') || env('TELEGRAM_WEBHOOK_SECRET')
   if (!secret || secret.length < 32) throw new Error('ADMIN_SESSION_SECRET must contain at least 32 characters')
   return secret
 }
