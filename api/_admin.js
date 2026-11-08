@@ -84,9 +84,9 @@ export async function verifyCredentials(username, password) {
 }
 
 function sessionSecret() {
-  const secret = env('ADMIN_SESSION_SECRET') || env('TELEGRAM_WEBHOOK_SECRET')
-  if (!secret || secret.length < 32) throw new Error('ADMIN_SESSION_SECRET must contain at least 32 characters')
-  return secret
+  const source = env('ADMIN_SESSION_SECRET') || env('TELEGRAM_WEBHOOK_SECRET') || env('TELEGRAM_BOT_TOKEN') || databaseUrl()
+  if (!source) throw new Error('Admin session secret is not configured')
+  return crypto.createHash('sha256').update(source).digest('hex')
 }
 
 function sign(payload) { return crypto.createHmac('sha256', sessionSecret()).update(payload).digest('base64url') }
